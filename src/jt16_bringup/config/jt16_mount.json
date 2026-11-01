@@ -1,0 +1,26 @@
+{
+  "reference_frame": "base_link",
+  "reference_origin": "ground",
+  "position_m": [
+    -0.03,
+    0.0,
+    0.36
+  ],
+  "roll_rad": 0.0,
+  "pitch_up_rad": 0.0,
+  "yaw_rad": 0.0,
+  "ros_urdf_rpy_rad": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "sim_vertical_fov_deg": [
+    -40.0,
+    0.0
+  ],
+  "sim_vertical_fov_provenance": "Provisional sign-corrected Gazebo model. Replace with the JT16 device correction file/channel elevations before hardware acceptance.",
+  "self_filter_min_m": [-0.208, -0.243, 0.02],
+  "self_filter_max_m": [0.205, 0.244, 0.75],
+  "self_filter_provenance": "Scaled cart visual bounds x=-0.198..0.194 and y=-0.233..0.234, with 10 mm simulation rendering padding. The archived static goal probe shows a false self return 9 mm outside the mesh bound. This is not hardware calibration.",
+  "provenance": "Navigation-safe horizontal simulation mount selected by the fixed eight-azimuth obstacle matrix: 8/8 detected versus 4/8 at 0.650000 rad. Physical bracket must be redesigned/reoriented and remeasured before hardware use; translation remains unremeasured."
+}

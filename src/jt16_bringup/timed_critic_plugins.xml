@@ -1,0 +1,5 @@
+<library path="jt16_timed_obstacle_critic">
+  <class name="mppi::critics::TimedObstacleCritic" type="mppi::critics::TimedObstacleCritic" base_class_type="mppi::critics::CriticFunction">
+    <description>Compare measured LiDAR surface motion with robot trajectories at matching times.</description>
+  </class>
+</library>

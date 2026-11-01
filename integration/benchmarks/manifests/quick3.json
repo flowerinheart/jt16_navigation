@@ -1,0 +1,15 @@
+{
+  "name": "quick3",
+  "purpose": "Fast iteration gate before the frozen V0 release suite",
+  "source_manifest": "barn30.json",
+  "navigation_timeout_s": 150,
+  "entries": [
+    {"world_id": 22, "seed": 0, "role": "early_collision_regression"},
+    {"world_id": 55, "seed": 0, "role": "mid_route_stall_regression"},
+    {"world_id": 77, "seed": 0, "role": "late_route_stall_regression"}
+  ],
+  "promotion_gate": {
+    "minimum_success_rate": 1.0,
+    "maximum_process_failure_rate": 0.0
+  }
+}

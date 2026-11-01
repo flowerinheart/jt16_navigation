@@ -1,0 +1,82 @@
+{
+  "created": "2026-10-29T15:43:18.140361+08:00",
+  "repositories": [
+    {
+      "path": "FAST_LIO_Hesai",
+      "url": "https://github.com/HesaiTechnology-Spatial-Perception/FAST_LIO_Hesai.git",
+      "commit": "2783882405484c0c852eaffc3b07b26d1fff2556",
+      "branch": "ROS2",
+      "status": ""
+    },
+    {
+      "path": "HesaiLidar_ROS_2.0",
+      "url": "https://github.com/HesaiTechnology/HesaiLidar_ROS_2.0.git",
+      "commit": "3d54078a3d770004ef30ec2cacc26673f4172b22",
+      "branch": "master",
+      "status": ""
+    },
+    {
+      "path": "XLeRobot",
+      "url": "https://github.com/Vector-Wangel/XLeRobot.git",
+      "commit": "b017b5e6354bd9f61f4247a920c72622ca0aade0",
+      "branch": "main",
+      "status": ""
+    },
+    {
+      "path": "Lidar_nav2_ws",
+      "url": "https://github.com/Ikunio/Lidar_nav2_ws.git",
+      "commit": "a383f3667513eecad42defb5947233f1d0649ac3",
+      "branch": "main",
+      "status": ""
+    },
+    {
+      "path": "evo",
+      "url": "https://github.com/MichaelGrupp/evo.git",
+      "commit": "baba165ea52df355b20f7f379433109ebef138c6",
+      "branch": "master",
+      "status": ""
+    },
+    {
+      "path": "KISS-Matcher",
+      "url": "https://github.com/MIT-SPARK/KISS-Matcher.git",
+      "commit": "8b58b118e00c7a5a22448741f8d956d638a44ae2",
+      "branch": "main",
+      "status": ""
+    },
+    {
+      "path": "small_gicp",
+      "url": "https://github.com/koide3/small_gicp.git",
+      "commit": "fa0cfc983417c044b6036f71dfa448038bb9c820",
+      "branch": "master",
+      "status": ""
+    },
+    {
+      "path": "Lidar_nav2_ws/src/localization/rtabmap",
+      "url": "https://github.com/introlab/rtabmap.git",
+      "commit": "27ca7ec05849b2fc5c22540673afa6b156a2cfff",
+      "branch": "",
+      "status": ""
+    },
+    {
+      "path": "Lidar_nav2_ws/src/registration/KISS-Matcher",
+      "url": "/home/haojiema/code/amd_robot/ref_arch/AMD_X100_Robotics_DevKit_1.0.3/lidar_slam/Lidar_nav2_ws/../KISS-Matcher",
+      "commit": "e3440b63340af7414ebd0fdde04e40f02ff4e7d2",
+      "branch": "",
+      "status": ""
+    },
+    {
+      "path": "FAST_LIO_Hesai/include/ikd-Tree",
+      "url": "https://github.com/hku-mars/ikd-Tree.git",
+      "commit": "e2e3f4e9d3b95a9e66b1ba83dc98d4a05ed8a3c4",
+      "branch": "",
+      "status": ""
+    },
+    {
+      "path": "HesaiLidar_ROS_2.0/src/driver/HesaiLidar_SDK_2.0",
+      "url": "https://github.com/HesaiTechnology/HesaiLidar_SDK_2.0.git",
+      "commit": "357ff14c0b4486d21ac0de0b218e34546276cacb",
+      "branch": "",
+      "status": ""
+    }
+  ]
+}

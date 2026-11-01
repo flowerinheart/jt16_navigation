@@ -1,0 +1,17 @@
+repositories:
+  external/reference/XLeRobot:
+    type: git
+    url: https://github.com/Vector-Wangel/XLeRobot.git
+    version: b017b5e6354bd9f61f4247a920c72622ca0aade0
+  external/reference/Lidar_nav2_ws:
+    type: git
+    url: https://github.com/Ikunio/Lidar_nav2_ws.git
+    version: a383f3667513eecad42defb5947233f1d0649ac3
+  external/reference/evo:
+    type: git
+    url: https://github.com/MichaelGrupp/evo.git
+    version: baba165ea52df355b20f7f379433109ebef138c6
+  external/reference/nav2_scenario_runner:
+    type: git
+    url: https://github.com/rsasaki0109/nav2_scenario_runner.git
+    version: 8e4ee8994f9e1b6646347155f513f6333f9df3ca

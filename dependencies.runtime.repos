@@ -1,0 +1,17 @@
+repositories:
+  external/runtime/FAST_LIO_Hesai:
+    type: git
+    url: https://github.com/HesaiTechnology-Spatial-Perception/FAST_LIO_Hesai.git
+    version: 2783882405484c0c852eaffc3b07b26d1fff2556
+  external/runtime/HesaiLidar_ROS_2.0:
+    type: git
+    url: https://github.com/HesaiTechnology/HesaiLidar_ROS_2.0.git
+    version: 3d54078a3d770004ef30ec2cacc26673f4172b22
+  external/runtime/small_gicp:
+    type: git
+    url: https://github.com/koide3/small_gicp.git
+    version: fa0cfc983417c044b6036f71dfa448038bb9c820
+  external/runtime/KISS-Matcher:
+    type: git
+    url: https://github.com/MIT-SPARK/KISS-Matcher.git
+    version: 8b58b118e00c7a5a22448741f8d956d638a44ae2

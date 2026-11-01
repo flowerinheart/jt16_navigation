@@ -1,0 +1,16 @@
+/external/
+/build/
+/install/
+/log/
+/results/
+__pycache__/
+*.pyc
+/integration/archive/
+/integration/build/
+/integration/install/
+/integration/log/
+/integration/deps/
+/integration/results/
+/integration/models/
+/integration/worlds/
+/integration/benchmarks/generated/

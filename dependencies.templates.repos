@@ -1,0 +1,25 @@
+repositories:
+  external/reference/clearpath_nav2_demos:
+    type: git
+    url: https://github.com/clearpathrobotics/clearpath_nav2_demos.git
+    version: 30e90a78ff71bba1ab47effcb2c1f726ed356b34
+  external/reference/clearpath_robot:
+    type: git
+    url: https://github.com/clearpathrobotics/clearpath_robot.git
+    version: f4109bbc3899337bf047fc5c4196911d33ca169b
+  external/reference/clearpath_simulator:
+    type: git
+    url: https://github.com/clearpathrobotics/clearpath_simulator.git
+    version: bbb4853741a7b52c28addd65f1ddc28f225855a5
+  external/reference/clearpath_common:
+    type: git
+    url: https://github.com/clearpathrobotics/clearpath_common.git
+    version: 267bcdb28c850ff89130e9b2e815bef9c2e8e574
+  external/reference/turtlebot4:
+    type: git
+    url: https://github.com/turtlebot/turtlebot4.git
+    version: 7fd29fb420e906f3aca4a904adb54b69b11c7c00
+  external/reference/navigation2:
+    type: git
+    url: https://github.com/ros-navigation/navigation2.git
+    version: d5d768b7b38a05e7cfd2b6c693b786b402161bed

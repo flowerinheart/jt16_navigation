@@ -1,0 +1,790 @@
+{
+  "dataset": "BARN",
+  "source": "https://github.com/Daffan/the-barn-challenge",
+  "revision": "bf5a226f6088ec96bf0d2dbee3253a8ea6119b83",
+  "selection": "10 evenly spaced IDs from each published difficulty third",
+  "mapping_runs": 30,
+  "navigation_runs": 150,
+  "entries": [
+    {
+      "world_id": 0,
+      "difficulty": "easy",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_0.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_0.npy",
+      "world_sha256": "a7a8129423b0b8fcb20b042646e929115b7dba18215f1c99ff8fa1adaec42d5c",
+      "path_sha256": "dcb06d7bc8b726fad02d9b999c2d9a2353db2e48b740a0a36c4e017721dca0cf",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 11,
+      "difficulty": "easy",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_11.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_11.npy",
+      "world_sha256": "dc35a9f9a63c0544d32dccb8b494821f4f8bbbe075b16222ed9d30649dbc2087",
+      "path_sha256": "cd5120d90e392844fc27040780d9262365acd8ad06b9b9665cc78731e7f8898d",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 22,
+      "difficulty": "easy",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_22.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_22.npy",
+      "world_sha256": "83b7e68f7620263f0beb57f743332268eafbf8ea897a728d4314aa47e3efb926",
+      "path_sha256": "3c2d23e480b771f3468d0ffeda16b0faf85851ac79d4da1fc80451a860eb0458",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 33,
+      "difficulty": "easy",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_33.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_33.npy",
+      "world_sha256": "5c1685d636cb40ef3a7f7f9f079498c9fcc123d8a42c0f28508800c425eaab7d",
+      "path_sha256": "98b73d58df4a7641fff32a318af993b73c4f3fc1e21c630fbeaa82348e39387a",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 44,
+      "difficulty": "easy",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_44.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_44.npy",
+      "world_sha256": "bd3bbff7fddcb8294bb58421596b7a93173a61fca1921983dfe9892aecd06494",
+      "path_sha256": "f1bfb400c153bf3c8cd0c62bad76bb87d14be4550ead6109aa21f15847eae475",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 55,
+      "difficulty": "easy",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_55.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_55.npy",
+      "world_sha256": "41263599ba4f2b08320d0e22b5291bd0a867775a50d2a3c60a7222275068806a",
+      "path_sha256": "00ee80a64bbd2ddd8b161f8cd9e4e9c7502445057a0b6c9e183076d2c5a58cee",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 66,
+      "difficulty": "easy",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_66.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_66.npy",
+      "world_sha256": "d17a71103d933e749657dac43d2cc20356572b4cc3ba9573cd5583ea7b780287",
+      "path_sha256": "fab6763ab0a9b1ef6b736ae5313909e980432d36298ff68acfdc19948911e00c",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 77,
+      "difficulty": "easy",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_77.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_77.npy",
+      "world_sha256": "ca5e5c725608729c40d5cee777e3757979ebfcfce0cfbb0dc3f582163b38d397",
+      "path_sha256": "db36269e9b9d7ac83f6c7e4d46972997c45502b1291d40d7c1eda18bcd63d9e7",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 88,
+      "difficulty": "easy",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_88.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_88.npy",
+      "world_sha256": "c6f3d7496e02b8410cb4724a26056afa5eeab8dd050a3ba3259d6de3a3a7842f",
+      "path_sha256": "6cb4e9c84fca0efa8c7c7c684988fea7d76354c78c37032b90c2e499ea5c1a5b",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 99,
+      "difficulty": "easy",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_99.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_99.npy",
+      "world_sha256": "c1dc8791b3e5681f19ff90ae3fddb79b11b86076e5cec644fc2c3962a98781c1",
+      "path_sha256": "1bafe49d4f6abc51e944a82c6e2c9631357d4ba1e54d3d4eb76e0da65925d6c7",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 100,
+      "difficulty": "medium",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_100.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_100.npy",
+      "world_sha256": "588beb7218242f40ed487aba58d3f4cb8e76d857bc6c33b657cc5c7cfce3edc7",
+      "path_sha256": "8d11ebe5961877ad38b11245f1496546d5aae8c0d10932e523e4f762f46f59d1",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 111,
+      "difficulty": "medium",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_111.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_111.npy",
+      "world_sha256": "1526faa7b25d5e9e48f723d2813ab7fe289ac8faebc205f82b2224d818e27804",
+      "path_sha256": "45970b95d9bd270f96886c586b7226abe843e3e81af5e8c6ab0f16e7effa993b",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 122,
+      "difficulty": "medium",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_122.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_122.npy",
+      "world_sha256": "3e428b767419266f09b82341321c3896fa587d44d05d49d284290996a6aae7fb",
+      "path_sha256": "2bc09aa8986947925f6fddceb587f455bbb6324cc8b82815ef6fba631a9e0203",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 133,
+      "difficulty": "medium",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_133.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_133.npy",
+      "world_sha256": "00c78770602d1c606f16db74d4096177b9a36360c9ad55bc32e2401adf02542a",
+      "path_sha256": "ed23d03e84b87ccf6640953225c7affe9d14b11bc48f32b7a36b9f10f890bc4e",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 144,
+      "difficulty": "medium",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_144.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_144.npy",
+      "world_sha256": "6e8ddba5ae79a76b9d62e7caee1c4f027d0220966f2d67f93daca27742030203",
+      "path_sha256": "82f0813206de325fd8140c7b5c277f67f7f548885dbd4fcd4257972cc410f4dc",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 155,
+      "difficulty": "medium",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_155.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_155.npy",
+      "world_sha256": "0711a1d27aa3806397cc08cc0618f9f92a0a2fa55ec21c1e28c2cba142245250",
+      "path_sha256": "90e9cdf9a5226563a20ef40e4e5f64165ca0cc4492d142946b21b01417911488",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 166,
+      "difficulty": "medium",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_166.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_166.npy",
+      "world_sha256": "9361baea6c56bee14190df35a5df57642f641267a89c85a1dfc2398714ddf715",
+      "path_sha256": "527dff3a5edd8b62ad57964d529e064f888b87b8414aa9f25465d1cb87b0f013",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 177,
+      "difficulty": "medium",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_177.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_177.npy",
+      "world_sha256": "745472b7c57411c02f21d856f013e9027724c5a64949366bee4c0e63d944835f",
+      "path_sha256": "1f755012ebcb776fe0d0237ebc8793fd1383a711c050f9d970a7fe6c67d852ad",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 188,
+      "difficulty": "medium",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_188.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_188.npy",
+      "world_sha256": "3a21a7747cea3641c71f67438dd81fab59a7e304a4f86c1fdb505695e8e5c4b5",
+      "path_sha256": "5e69ce9118e2780d677980b93dfc4feb5e45698c31d7ab21094ceb2b8582ab01",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 199,
+      "difficulty": "medium",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_199.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_199.npy",
+      "world_sha256": "0b8c6bd1cedfde951af3b7fdd01d7155fa50d904c59d4df45f7c105cc88aa4c2",
+      "path_sha256": "dc83f10d2b60888815be8b379210fca59770f6e35810a214d34b7358f61ef2ea",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 200,
+      "difficulty": "difficult",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_200.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_200.npy",
+      "world_sha256": "b8505927fbc8c5509c0c5c47a5272bb1b3eab8e12ca23eec3950e424d2ad6fa6",
+      "path_sha256": "0e8a09da66d4f8e623685c904fdb5bf8bb8c47133b1894d2b04a0ea447097cbe",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 211,
+      "difficulty": "difficult",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_211.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_211.npy",
+      "world_sha256": "2c8df2bbb4db33c4c78099b015144a6595974592b803f68fc779bb4db80b74e2",
+      "path_sha256": "dae5f5a311e2333c5b850465f0876c238b0890c1cff560bd9efaeb37928fe603",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 222,
+      "difficulty": "difficult",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_222.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_222.npy",
+      "world_sha256": "21b9c92e1d0d9104360224d6e8dd63961929ea5064118e4f63c8151ff697c75c",
+      "path_sha256": "5d835e6b5ea587af111b6fcccec748eb8ab2c17effae4f002cb865da1f14c427",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 233,
+      "difficulty": "difficult",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_233.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_233.npy",
+      "world_sha256": "3c111520b8c452a5442ed4942ff0db8319383e54d66c51e3fdb409cf72e18379",
+      "path_sha256": "c942509d41cfb29648167ec3cbe6120ca7be0862d9e7fcf4eb78af4f778ec15e",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 244,
+      "difficulty": "difficult",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_244.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_244.npy",
+      "world_sha256": "df9b6815a6349e0907987ed393940d70e3a725410c40d3d26f8fbb6c12f71aab",
+      "path_sha256": "8d65195922279a7a12e5f7bbd9f4b1dc66206b5619c5bea8b7be65aa150888dd",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 255,
+      "difficulty": "difficult",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_255.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_255.npy",
+      "world_sha256": "f1a9070bfab7a64982410f46255fd1b488a4e4a5057f1b6ed65bd551cb70879d",
+      "path_sha256": "f7019263ca60a16870044b78483768ec5df0307ba054475e62a8cf766aaf42ca",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 266,
+      "difficulty": "difficult",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_266.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_266.npy",
+      "world_sha256": "5d339ecd53a648575ad3e21dfbd3174bc3e4aa7348c186a59713483421866a67",
+      "path_sha256": "ea921926d174d05b12988cb85962cecbb895cc9de535c9a4407f523301478a99",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 277,
+      "difficulty": "difficult",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_277.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_277.npy",
+      "world_sha256": "8e26b435d499b01f74224df92f0f8e343ae363b55538506e86f48c02bd532874",
+      "path_sha256": "dcaa41937fc2903a3c6f0adba932eb9351ae4e2f2b7cdf5e8ce01e11530ed550",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 288,
+      "difficulty": "difficult",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_288.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_288.npy",
+      "world_sha256": "b8f2a7de53b377a69dd82b6dccd0e439674c766aa9db744d7fa166063726457b",
+      "path_sha256": "d3cd3737f173df56b47f85dcc555c9eb41ec5c51eb2fe510e2cec4b2cd139c12",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world_id": 299,
+      "difficulty": "difficult",
+      "world": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_299.world",
+      "path": "external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/path_files/path_299.npy",
+      "world_sha256": "1ccf05d28c1f5641a99b19534247a4e991281cb79c7c648abe436349cb21be6e",
+      "path_sha256": "445a375f74fc6256ecd5710bbdaf95900f1ad515ad99d7f9a08f49ccc4a8225a",
+      "mapping_seed": 0,
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "start_xyyaw_m_rad": [
+        -2.25,
+        3.0,
+        1.5707963267948966
+      ],
+      "goal_xy_m": [
+        -2.25,
+        13.0
+      ],
+      "timeout_s": 150.0
+    }
+  ]
+}

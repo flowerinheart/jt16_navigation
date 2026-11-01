@@ -1,0 +1,135 @@
+{
+  "dataset": "Arena-Bench",
+  "source": "https://github.com/ignc-research/arena-bench",
+  "revision": "519640415718abc7603ff38bc80b2bd22c38b13c",
+  "selection": "paper evaluation worlds x 5/10 dynamic obstacles",
+  "navigation_runs": 60,
+  "entries": [
+    {
+      "world": "small_warehouse",
+      "obstacle_count": 5,
+      "scenario": "external/benchmarks/arena-bench/simulator_setup/scenarios/small_warehouse_obs05.json",
+      "map": "external/benchmarks/arena-bench/simulator_setup/maps/small_warehouse/map.yaml",
+      "scenario_sha256": "da89b6d0c57f0326f913faff284136e53f198589f8cc8504e38df6f8b9214aca",
+      "map_sha256": "e1fa5bb9b1dbf8b52e95e26c5222af35d443b69b4f853251e7c895ad36644d41",
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world": "small_warehouse",
+      "obstacle_count": 10,
+      "scenario": "external/benchmarks/arena-bench/simulator_setup/scenarios/small_warehouse_obs10.json",
+      "map": "external/benchmarks/arena-bench/simulator_setup/maps/small_warehouse/map.yaml",
+      "scenario_sha256": "9d75a7a410376e23b1c35eb8cf8fcda50d45c2bad3b1e18bcbdf7d04ff26c6e4",
+      "map_sha256": "e1fa5bb9b1dbf8b52e95e26c5222af35d443b69b4f853251e7c895ad36644d41",
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world": "map2",
+      "obstacle_count": 5,
+      "scenario": "external/benchmarks/arena-bench/simulator_setup/scenarios/map2_obs05.json",
+      "map": "external/benchmarks/arena-bench/simulator_setup/maps/map2/map.yaml",
+      "scenario_sha256": "df30848151c44125b3893f5ae0c4f095885c68a925e3b20434d7eb5603c3df47",
+      "map_sha256": "b7c81c995e22d1ec5b126105703242453d46053009e8fcdb42d94d5f8d8f8fe0",
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world": "map2",
+      "obstacle_count": 10,
+      "scenario": "external/benchmarks/arena-bench/simulator_setup/scenarios/map2_obs10.json",
+      "map": "external/benchmarks/arena-bench/simulator_setup/maps/map2/map.yaml",
+      "scenario_sha256": "ff8aab5c7ce2a7724c4f8c7bde369d38aac0b2c07afd2b0cef5987d97d7a36d9",
+      "map_sha256": "b7c81c995e22d1ec5b126105703242453d46053009e8fcdb42d94d5f8d8f8fe0",
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world": "map5",
+      "obstacle_count": 5,
+      "scenario": "external/benchmarks/arena-bench/simulator_setup/scenarios/map5_obs05.json",
+      "map": "external/benchmarks/arena-bench/simulator_setup/maps/map5/map.yaml",
+      "scenario_sha256": "84695a0d8425bf585bd1faaa387bab2d1c77457e8e78b2a95b9e8887bdc1353f",
+      "map_sha256": "b7c81c995e22d1ec5b126105703242453d46053009e8fcdb42d94d5f8d8f8fe0",
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "timeout_s": 150.0
+    },
+    {
+      "world": "map5",
+      "obstacle_count": 10,
+      "scenario": "external/benchmarks/arena-bench/simulator_setup/scenarios/map5_obs10.json",
+      "map": "external/benchmarks/arena-bench/simulator_setup/maps/map5/map.yaml",
+      "scenario_sha256": "4f2f8225e3fd074c11d680fea20c64eba88cae45aea9e8aae00cc39b6b2b9949",
+      "map_sha256": "b7c81c995e22d1ec5b126105703242453d46053009e8fcdb42d94d5f8d8f8fe0",
+      "navigation_seeds": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "timeout_s": 150.0
+    }
+  ]
+}

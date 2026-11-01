@@ -1,0 +1,5 @@
+<library path="jt16_prediction_layer">
+  <class name="jt16_bringup::PredictionLayer" type="jt16_bringup::PredictionLayer" base_class_type="nav2_costmap_2d::Layer">
+    <description>Transient LiDAR motion forecasts in the local odometry costmap.</description>
+  </class>
+</library>

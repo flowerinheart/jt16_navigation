@@ -1,0 +1,15 @@
+{
+  "name": "arena_quick3",
+  "purpose": "Fast dynamic-obstacle gate before the frozen Arena-6 suite",
+  "navigation_timeout_s": 150,
+  "entries": [
+    {"world": "small_warehouse", "obstacles": 5, "seed": 1, "role": "dynamic_collision_regression"},
+    {"world": "map2", "obstacles": 5, "seed": 0, "role": "long_route_timeout_regression"},
+    {"world": "map5", "obstacles": 5, "seed": 1, "role": "local_stall_regression"}
+  ],
+  "promotion_gate": {
+    "minimum_success_rate": 1.0,
+    "maximum_collision_rate": 0.0,
+    "maximum_process_failure_rate": 0.0
+  }
+}
