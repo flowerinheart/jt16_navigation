@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1040" height="150" viewBox="0 0 1040 150" role="img" aria-labelledby="title desc">
+  <title id="title">V0 LiDAR-only mapping and navigation pipeline</title>
+  <desc id="desc">JT16 and IMU feed official Hesai FAST-LIO. A saved 2D map feeds AMCL. Live LiDAR and motion estimates feed Nav2 MPPI. Only AMCL publishes map to odom and FAST-LIO bridge publishes odom to base.</desc>
+  <rect width="1040" height="150" rx="14" fill="#f0f6f6"/>
+  <g fill="#fff" stroke="#007f86" stroke-width="1.5">
+    <rect x="16" y="20" width="158" height="76" rx="9"/>
+    <rect x="196" y="20" width="184" height="76" rx="9"/>
+    <rect x="402" y="20" width="172" height="76" rx="9"/>
+    <rect x="596" y="20" width="154" height="76" rx="9"/>
+    <rect x="772" y="20" width="252" height="76" rx="9"/>
+  </g>
+  <g font-family="sans-serif" text-anchor="middle" fill="#163c40">
+    <g font-size="19" font-weight="600">
+      <text x="95" y="50">JT16 + IMU</text><text x="288" y="50">Hesai FAST-LIO</text>
+      <text x="488" y="50">Saved 2D map</text><text x="673" y="50">AMCL</text>
+      <text x="898" y="50">Nav2 MPPI</text>
+    </g>
+    <g font-size="13">
+      <text x="95" y="76">geometry only</text><text x="288" y="76">3D mapping + odometry</text>
+      <text x="488" y="76">PCD → occupancy grid</text><text x="673" y="76">map → odom</text>
+      <text x="898" y="76">costmap + time-matched critic</text>
+    </g>
+    <text x="518" y="128" font-size="14">Live LiDAR → height-filtered scan + short motion estimate → costmap / temporal score</text>
+  </g>
+  <g fill="#007f86" font-size="24" font-family="sans-serif">
+    <text x="177" y="64">→</text><text x="383" y="64">→</text><text x="577" y="64">→</text><text x="753" y="64">→</text>
+  </g>
+</svg>
