@@ -328,23 +328,28 @@ NAV150, so this is not a claim of robust timing or universal metric improvement.
 New independent re-review: `docs/reviews/20261101-current-gate-rereview.md`.
 Full-suite V0 release/hardware calibration remain outside this small-set gate.
 
-### V1: FAST-LIO input integrity, timing and calibration
+### V1: Full-benchmark reliability and navigation success
 
-Improve the official baseline without changing Nav2 planner/controller selection:
+2026-11-02 revision after the complete V0 batch: prioritize observed input/map,
+planning, dynamic-collision and stall failures before sensor-realism experiments.
+Canonical plan: [docs/v1/plan.md](docs/v1/plan.md).
+Development manifest: `integration/benchmarks/manifests/v1_dev16.json` — preserve
+the original ten cases and add three strict successes plus three failures;
+V0 full-batch baseline7/16. Cover dense Arena navigation, medium/difficult BARN
+routes, collision-free timeouts (map2obs10/99), and Nav2 activation failure (177).
 
-- Replace instantaneous/fabricated point time with a rotating JT16 scan timing model.
-- Match official Hesai PointCloud2 field names, units and timestamp semantics.
-- Validate LiDAR/IMU clock offset and synchronization.
-- Revalidate LiDAR-to-IMU and LiDAR-to-base extrinsics.
-- Add explicit self, range and outlier filtering at the correct pipeline stage.
-- Correct covariances, TF frames and initialization parameters.
+P0: recorded LIO/valid-map lifecycle (world277), initial planning (11/55),
+and stale temporal LiDAR input (map2). P1: dense dynamic collisions (warehouse
+obs10seed0) and stalls/stale AMCL (world144). P2: frozen dev16, limited repeats,
+then one unchanged full30-mapping/150-BARN/60-Arena comparison and independent reviews.
 
-Required V1 improvement over V0:
-
-- FAST-LIO ATE or RPE improves by at least 10% relative; and
-- 95th-percentile wall error improves by at least 10% or occupied-cell F1 improves by at least 2 percentage points; and
-- initialization/complete-trajectory rate does not decrease; and
-- all global non-regression gates pass.
+V1 targets: BARN≥105/150 strict success; Arena≥42/60; Arena collisions≤6/60;
+valid maps30/30; navigation PROCESS_FAILURE≤4/210. Apply global non-regression
+gates on comparable finite metrics and report missing inputs separately.
+Retain FAST-LIO/AMCL/MPPI and the frozen sensor/scene/seed/timeout/robot protocol.
+Real rotating-scan timing, JT16 channel calibration and hardware extrinsics remain
+separate input-protocol work; do not compare different sensor profiles as an
+algorithm improvement. V0 code/tag/results remain unchanged.
 
 ### V2: 2D projection and saved-map localization quality
 
