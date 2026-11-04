@@ -1,0 +1,1129 @@
+{
+  "verified_identities": 224,
+  "expected_identities": 273,
+  "full_identity_set_complete": false,
+  "current_sources_runtime_inputs_match": true,
+  "archived_sources_inputs_match": true,
+  "records": [
+    {
+      "path": "integration/results/v1/dev16-candidate-g/arena6/map2_obs05/seed_00/run-provenance.json",
+      "sha256": "50df86ac64394ef426638ef0c3dfe16eef90af91d199c371f47418174723ecc3",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/arena6/map2_obs10/seed_00/run-provenance.json",
+      "sha256": "c0a5ae910ffd484260c28bee649c83debd02ae5bf593fca701e4f5a592dc7474",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/arena6/map5_obs05/seed_01/run-provenance.json",
+      "sha256": "dddd98a4d92aec164ccf02aa5fa9b3f26590359b460b308c91423e482d19c6c8",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/arena6/map5_obs10/seed_00/run-provenance.json",
+      "sha256": "ead8ff02b471a65b831013e560aa347c65acb4aff4a7a6426074f19e6b3a3c7d",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/arena6/small_warehouse_obs05/seed_01/run-provenance.json",
+      "sha256": "5d90307d8b3ec3b434ec0518f132fd64dc3ef357a2ce6c4962f069d14bc744b2",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/arena6/small_warehouse_obs10/seed_00/run-provenance.json",
+      "sha256": "fe9e6717666987c810ab75bdc02b739d52f1ff475ba6e827e1db063469e0c3d3",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_011/mapping/run-provenance.json",
+      "sha256": "aa1e7b0c4c46322e3086e76dbd3e77aaf32c7a5e4ad47503536eb558396518df",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_011/navigation/seed_01/run-provenance.json",
+      "sha256": "1cf2398e5fe22a6d3507a75e16f1a64937ede5dd2c288b0f21577664cb7fbe12",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_022/mapping/run-provenance.json",
+      "sha256": "d8fb41bf6af130c590f0ec252e494ee2820a4be015f1eefeab7eecfa48357319",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_022/navigation/seed_00/run-provenance.json",
+      "sha256": "782dcc3cf3c5b187a821428b22ef91f138d3c647415c92e09037fdab28dd6532",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_055/mapping/run-provenance.json",
+      "sha256": "fb3703c5d102ea190f15a756f14d641019c7b2a1d60522e34862381b88194bba",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_055/navigation/seed_00/run-provenance.json",
+      "sha256": "815ecc4704e5a5f41404e60a1b62aa220225f08769d09b7fb0d640bdf3fb8542",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_077/mapping/run-provenance.json",
+      "sha256": "e2293a55352298b75572523b20edb4cc1f5ce001e0aa5fb885044ace5a8f9c8c",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_077/navigation/seed_00/run-provenance.json",
+      "sha256": "9578aafcd602d65c10b8066ef118fa04a6b05afe0750cf64e9dde0e40c31dbed",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_099/mapping/run-provenance.json",
+      "sha256": "c39ade474195c004c5ea92bb0ed781c195f3b833ee3bfd3dd405df8ba90f0a6a",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_099/navigation/seed_00/run-provenance.json",
+      "sha256": "d9e8917837b9c3844456596cccc366f68aa1266b0b01b3c4c09a3e185282f82c",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_111/mapping/run-provenance.json",
+      "sha256": "e64bf91b513341d31387244257ddf7039a8088ae966bb32c4d572159b43fd0a3",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_111/navigation/seed_00/run-provenance.json",
+      "sha256": "43b6c547f8556134debe704f32540c741731a5baf6a8627190df2eb8ad7b4696",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_144/mapping/run-provenance.json",
+      "sha256": "3ce53614a4d40d0f252de330bef233d5c23fe6c0da4bfbeb27354664fde5a7ef",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_144/navigation/seed_00/run-provenance.json",
+      "sha256": "a8d057349e84e45660720c9ef9af7aced9f9a8488c89fb7cc1628ae329a52550",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_177/mapping/run-provenance.json",
+      "sha256": "af81f2ebcbea56c43591379267670108d50b22a9a42114420c744841b5dfa93c",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_177/navigation/seed_00/run-provenance.json",
+      "sha256": "50ed6765a6f75b4de94c923d99339f76d9e3f91a08084b8a297b301e34167e9e",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_244/mapping/run-provenance.json",
+      "sha256": "474897d71e9e8cb73422c44eaaf9496f612f2cf9c5cb4342b30eb9b231655163",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_244/navigation/seed_00/run-provenance.json",
+      "sha256": "36d53cd434cb36dde001e8da25fe3b0ce4b4a533b1068c40a8245c415d87ae78",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_277/mapping/run-provenance.json",
+      "sha256": "35f742c7e1b19c41103392612b4a82fd0599cffb261368e65f34aeffe60616cc",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/dev16-candidate-g/barn30/world_277/navigation/seed_00/run-provenance.json",
+      "sha256": "0d288a153a98af989b309b82412059bcc44c3c9a1fc373f1aaaa49b8e2ba3e74",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/repeated-g/repetition_01/map2_obs05/seed_00/run-provenance.json",
+      "sha256": "30d4a435ef7f039639fbdab7242a253ca732ecd7052e46edf5ba95adb2a42769",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/repeated-g/repetition_01/small_warehouse_obs10/seed_00/run-provenance.json",
+      "sha256": "11a6edf1c3152b78c38af750bf49b2a015055458149595e3a791f8c8623648d8",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/repeated-g/repetition_02/map2_obs05/seed_00/run-provenance.json",
+      "sha256": "1d24277339de43c360181e01c10e4bb2905da1c0cab67ea878d609490801142c",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/repeated-g/repetition_02/small_warehouse_obs10/seed_00/run-provenance.json",
+      "sha256": "4386435fa87d8a063fc5af8766b85ccfebc8bdc595c39b14c39c7a59020f12ff",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/repeated-g/repetition_03/map2_obs05/seed_00/run-provenance.json",
+      "sha256": "fd8134fadf49cee695c50a6435f430d51b54981a567f646e236d1b8feafcee48",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/repeated-g/repetition_03/small_warehouse_obs10/seed_00/run-provenance.json",
+      "sha256": "e433366dedb668d27596ade311505d3bd45d7fb69417192b74a96c3fd56336b4",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/arena6/small_warehouse_obs05/seed_00/run-provenance.json",
+      "sha256": "45ca9c0af4e838bdaccae31d23fac7884c5caf922006dd9cbbc939e14d131a8b",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/arena6/small_warehouse_obs05/seed_01/run-provenance.json",
+      "sha256": "3c041070c1ab3dc11680b733633572092b757b3e23591658411c08fa255d5f05",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/arena6/small_warehouse_obs05/seed_02/run-provenance.json",
+      "sha256": "7a3c2124fa1c870d8a0e2dcd36ee03af48c1ee09b46a4a12849556d4344706fd",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/arena6/small_warehouse_obs05/seed_03/run-provenance.json",
+      "sha256": "c47e2223a41b6c6e2ed73316d8b13977f37159a164442faa738479aec2f15a10",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/arena6/small_warehouse_obs05/seed_04/run-provenance.json",
+      "sha256": "6cc8bd36f6f4569003bd69392df4388d04d79a167ac04ff41f41b4927938af03",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/arena6/small_warehouse_obs05/seed_05/run-provenance.json",
+      "sha256": "e5c195bfcd88b6642e0d364d7c45d421f625a3cdb6706f762a5744b4bf12e5a9",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/arena6/small_warehouse_obs05/seed_06/run-provenance.json",
+      "sha256": "0b3364a8879faf3e899394c8664c4c0eed0938a9c3ce138368e948487f87c273",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/arena6/small_warehouse_obs05/seed_07/run-provenance.json",
+      "sha256": "06b12ab9e9501202b74ca3cd7c59ae48092150442a58d787c6a929ab9bb8d6be",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/arena6/small_warehouse_obs05/seed_08/run-provenance.json",
+      "sha256": "da8b60461f3db85e10e74226e2f1c4df95b6abea94d38c2cf9c9f1a54fb942d5",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/arena6/small_warehouse_obs05/seed_09/run-provenance.json",
+      "sha256": "fb842b4b25029440b0a4f363b8f4554ad7652edef62b242cfc0e336454a78f81",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/arena6/small_warehouse_obs10/seed_00/run-provenance.json",
+      "sha256": "56a6a5a5da0658530daf54f90b977dcb346aae816b1a233c1892e9a67755b8c1",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_000/mapping/run-provenance.json",
+      "sha256": "104c9d05d3417a6e2b4683b227de4c806a3249d59b95b9e89e97e41868c45a06",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_000/navigation/seed_00/run-provenance.json",
+      "sha256": "67209c0fb771f59e118326148dedebb9268fe4238cba2fa8d5bc13df42c1072f",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_000/navigation/seed_01/run-provenance.json",
+      "sha256": "4e6f302a460f8142aeb91a58f9e3c9ad1e0a27529efdf5c3b839f35a5d9f3e12",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_000/navigation/seed_02/run-provenance.json",
+      "sha256": "a598f4d4203da8a9a8f6b46f462c810f556fdb096b4748e5169d677f6e978467",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_000/navigation/seed_03/run-provenance.json",
+      "sha256": "c6f1615ce2241246d4ece35d12260676a09a1da30af14dc76f74b536753f8bc3",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_000/navigation/seed_04/run-provenance.json",
+      "sha256": "7114e01075f46b6de38065fa290fd6c0e5ed137763f0b68431de41f0094a5c60",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_011/mapping/run-provenance.json",
+      "sha256": "606521f4733f9497e3658ed2bd518aefa44f4e70dcfab2618e392e66ce3ece1d",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_011/navigation/seed_00/run-provenance.json",
+      "sha256": "9c623ca271c80dd50ecdc23288ec073ce1f4ef41d8f62d8ebd02ee5210fe87a4",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_011/navigation/seed_01/run-provenance.json",
+      "sha256": "179b28c5e6e6d822a436b5e120528a4246ac3458e7dec00b41342140cc7f1570",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_011/navigation/seed_02/run-provenance.json",
+      "sha256": "ab0c11219d97b1ba221a870b2f23cbbbd8a6a97cab5ec0c89b23b22a9d428239",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_011/navigation/seed_03/run-provenance.json",
+      "sha256": "cbd5b0d7075279fd7091593dfa8c4683725703d99f0e42d44911085c99273e20",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_011/navigation/seed_04/run-provenance.json",
+      "sha256": "08fef683fa6031747f2aaf54d64cedbab6cf33bd6342befba7a01d04a87c9d6d",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_022/mapping/run-provenance.json",
+      "sha256": "e30f82b84eee9897e8ed53cd7c007b13279e6769dc3292f444dcf391974bc415",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_022/navigation/seed_00/run-provenance.json",
+      "sha256": "89938577267bf655518104f28bdf8fa8a021c9767178e57a9634b7edbd223694",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_022/navigation/seed_01/run-provenance.json",
+      "sha256": "50e8668d9cb55a9278aa8e0a53f697b19be9edad6e04d2de5bb7432b77938e90",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_022/navigation/seed_02/run-provenance.json",
+      "sha256": "3a9d8e36422918562c8c7a551a6959971ca621754d43085960622985efa62c6d",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_022/navigation/seed_03/run-provenance.json",
+      "sha256": "e148dbcfe62c1bc78a1038be7dd9ba87dd3844df179be45497da2729a0980698",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_022/navigation/seed_04/run-provenance.json",
+      "sha256": "ee5fea46dec67d2a861f05fb46583aeb4fca6896cfb0ce14122dfb1315914a46",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_033/mapping/run-provenance.json",
+      "sha256": "629e660b62951bc1da447a257553882aef0e7a058fc9c1a54ed5a5f1d7f8ebae",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_033/navigation/seed_00/run-provenance.json",
+      "sha256": "b87a32ff5acf4d9e50e4c87b159a3cd445f7e1cc533c6d612f3f9383eb443abc",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_033/navigation/seed_01/run-provenance.json",
+      "sha256": "241f561ef2f6e4046afc87734208c75486ee883dfad5c298385c759b90cd5ede",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_033/navigation/seed_02/run-provenance.json",
+      "sha256": "ecb66c117ff6653c69f515086e3cb483910f901d3f0085cd31ce1bef1f8cb4ea",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_033/navigation/seed_03/run-provenance.json",
+      "sha256": "c647e356e1b5a7c5c161fbc7ab33b5ca1d0fba38291562b876fbb4cda32fbd64",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_033/navigation/seed_04/run-provenance.json",
+      "sha256": "61c174cddded73d6de8f35c670eafb2d9926e7b26927bb9b3969e3abdfedffe7",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_044/mapping/run-provenance.json",
+      "sha256": "54577e5b38b2ec7864260c15856811de972b1fd658125d067e815226104c0176",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_044/navigation/seed_00/run-provenance.json",
+      "sha256": "db67a8f964a2ae124d7a48787fc56c5faba70332dc47432d601c43e77778afcb",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_044/navigation/seed_01/run-provenance.json",
+      "sha256": "8a7a6f6115f675661bc62d99f910369ef32e6c8cf09c254321e1931596ca7b3e",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_044/navigation/seed_02/run-provenance.json",
+      "sha256": "249be0bdbf1ce1bf6daab2118f2c489ff5ad0c7a6f5cf0a62457feae2529375a",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_044/navigation/seed_03/run-provenance.json",
+      "sha256": "493a07895371f809e4f8a69a5f6bcb9c01a5d378d39acc62e3a163285296e01b",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_044/navigation/seed_04/run-provenance.json",
+      "sha256": "ede642a87be16ad3b49ba2c35a180b8b23046380be56fc4f3296fcf4219c821d",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_055/mapping/run-provenance.json",
+      "sha256": "cf8195d857418a0a3b802289af66db58821eff938e0042b9dffc9bc94fc8a7d5",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_055/navigation/seed_00/run-provenance.json",
+      "sha256": "fef0f9e11841ff022d59e420438ca2691b29826c7cbd7c5e6549d7e3c9760da7",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_055/navigation/seed_01/run-provenance.json",
+      "sha256": "c4830724bcc12a33f854a2797108a4a0549a2c04f897e171427f353c143cc9cf",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_055/navigation/seed_02/run-provenance.json",
+      "sha256": "74090180367da853ff55ac240cdff9f04605c2b249b5645bdf825b04ff64c420",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_055/navigation/seed_03/run-provenance.json",
+      "sha256": "5f27f7d36cd3dadbc9be89d35164f23f3c74d87506a86789295f1f98b3184f94",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_055/navigation/seed_04/run-provenance.json",
+      "sha256": "6f2e61aeb76368d1d4ef5edf63a18edd026e7caa7a6e16e6da378a37c8fb7f0a",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_066/mapping/run-provenance.json",
+      "sha256": "2205d092f1a36355e3538b0bf484d6a865fef17f376c649c4527bdbf70dd844e",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_066/navigation/seed_00/run-provenance.json",
+      "sha256": "a3cd3d5cfc894e5511b59af7db48606507935d54c5d61d29eb4ffddda96e6230",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_066/navigation/seed_01/run-provenance.json",
+      "sha256": "7dee7d953f84f6b272a804e2a79e9a326bb89f708070c53b39c068a42352ea27",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_066/navigation/seed_02/run-provenance.json",
+      "sha256": "aabeecef73f12cd30367fb0dc2abd030e79cd97eef151185e0652dabe245138d",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_066/navigation/seed_03/run-provenance.json",
+      "sha256": "22075a9c076711cf378f37ef058f59900562e1a4c363414d10292c0b915b67c3",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_066/navigation/seed_04/run-provenance.json",
+      "sha256": "8e3ce405065419122682aadf241fa484537a3fde5f0cacee36ea05e6966ba9cd",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_077/mapping/run-provenance.json",
+      "sha256": "4c2579452fd557f9ed2833a2f33669d93b5fc452d82f6ab583f118a14d6e18ba",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_077/navigation/seed_00/run-provenance.json",
+      "sha256": "55a4b9dd9af7297e07ad9f88f19fe70a43fefef37e900aa8c18cdde445d95ff7",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_077/navigation/seed_01/run-provenance.json",
+      "sha256": "b947e930c9d8ad7cbbebede5f5d0b6d93a114983bc2f0a69767331d790437088",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_077/navigation/seed_02/run-provenance.json",
+      "sha256": "640f44b3f53075050858e4e65bf4fa905494b7de621c89bd5ef15cf26ba401fa",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_077/navigation/seed_03/run-provenance.json",
+      "sha256": "847f05995376862bb6bdaa7704360151343928066677e3003119df14a2aaee93",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_077/navigation/seed_04/run-provenance.json",
+      "sha256": "be2f16cbb5fc02bcc181c8c559284bff5400d3c317069c58f78c3d2129fc6d03",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_088/mapping/run-provenance.json",
+      "sha256": "da13dc99649b003b8165632ba169669e5e6ac636f7b406ff8ba765f6f5229d51",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_088/navigation/seed_00/run-provenance.json",
+      "sha256": "9a9ad8af425ce81d7d5219c051ee83c12262a03db49842438acfdfccdbb940d5",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_088/navigation/seed_01/run-provenance.json",
+      "sha256": "d1ffb15c7ef37e49047c90d2be76513865dfe7cd74e31610e031d720d8bf4692",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_088/navigation/seed_02/run-provenance.json",
+      "sha256": "2de6c25ada60b687ff1e54420f5b1bc956e2cdd3b1b52386733b50abff30a7a3",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_088/navigation/seed_03/run-provenance.json",
+      "sha256": "8ab618194c4a0aedd8f2b6e223c5e3c9e2bf02deb8894a21e72b1baf42e860d8",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_088/navigation/seed_04/run-provenance.json",
+      "sha256": "4810a9d403b00c7474878be6bbbaafd247de2a0cab47773b214b139c9068219b",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_099/mapping/run-provenance.json",
+      "sha256": "8fb04077e10987baea98223ceed2ce204c52a8bed13f14f3dbc47c86782708cd",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_099/navigation/seed_00/run-provenance.json",
+      "sha256": "38bd8f21d90bb92922771b51e1e7a89db6965270266119183b333be7bff0e3cc",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_099/navigation/seed_01/run-provenance.json",
+      "sha256": "7ebd5dce2687999c82c31d2d32f0e59a46941b28607db36802708439cab71dcd",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_099/navigation/seed_02/run-provenance.json",
+      "sha256": "d139045c0130b4bf643746949e24cfb82b5b56debc331133343b0d84efdb7aba",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_099/navigation/seed_03/run-provenance.json",
+      "sha256": "12efbea671d5eb012b00561291b2b7cab95f323492c1cce2365974ded5790727",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_099/navigation/seed_04/run-provenance.json",
+      "sha256": "e0ffcef4d3ebb98341519e14e4b66791e984c24841c34f3b93b2aa2745396eb1",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_100/mapping/run-provenance.json",
+      "sha256": "4cac4fa085664c429dafc8389f504ed543f2e0442152a07d05458fba768fa644",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_100/navigation/seed_00/run-provenance.json",
+      "sha256": "7fcb5fd8c2860323cd4351f0a4889425ff3c80dbc5cf7eeb5ef02b297167ff56",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_100/navigation/seed_01/run-provenance.json",
+      "sha256": "8c77aeeeb623ee755d0e47183a49e246c541fe14d285e0af5a690955fa994a52",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_100/navigation/seed_02/run-provenance.json",
+      "sha256": "fc5be9dbf6437373dbb69c93cf16e5bc9f4e0ab3882755ba882483d04a7d9a20",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_100/navigation/seed_03/run-provenance.json",
+      "sha256": "c87a60149d679174d3649ded33c098e4a55b088b0da9a32fdbfb4917f054c20b",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_100/navigation/seed_04/run-provenance.json",
+      "sha256": "0c5e5cb074871b116dfa7c9feb4da9e118ce9fcb7d9c3a3b1c9df661875a6d9c",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_111/mapping/run-provenance.json",
+      "sha256": "519c29b65bd185100cd9027b213eccfe917be3918a409851efcd50acd61984ed",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_111/navigation/seed_00/run-provenance.json",
+      "sha256": "8ee878e99aaaa742b075e4ca8314190420b14fa1ead75319a28208d5aabab1e8",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_111/navigation/seed_01/run-provenance.json",
+      "sha256": "ec2c4cc9393137ef2597141f9e7b8186cafd44f991311239eff2449cedf5a0a9",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_111/navigation/seed_02/run-provenance.json",
+      "sha256": "bfea89932b8c167d862a71f86347d78752e4394f728f0709e787762f0dcaa7be",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_111/navigation/seed_03/run-provenance.json",
+      "sha256": "bd303767745ece1220b79f62041b678c153cf8fe3102745d02e3a5bb13cecabd",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_111/navigation/seed_04/run-provenance.json",
+      "sha256": "fc2b0f0be58b78a8d77d0f29a93c391f9c337b3bcd435f225f96cd07ea65d85f",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_122/mapping/run-provenance.json",
+      "sha256": "924c9aed52d8b7d1ac23ca88cadf2df60f428a36928c571b0ceb1a5c863cd2c9",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_122/navigation/seed_00/run-provenance.json",
+      "sha256": "8f8c28aad24cb3c011ea11a18666547145acb52a8ef7afa0194f8f8603b18e4e",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_122/navigation/seed_01/run-provenance.json",
+      "sha256": "bced4f34317ed75b0ebd132d78b8fb4f077d0070037bd95dfe85dab0d1b5101b",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_122/navigation/seed_02/run-provenance.json",
+      "sha256": "5f2dad632d5dd1015b04963e32d3a48cb7c273002d204c95df2dae1677c1f81d",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_122/navigation/seed_03/run-provenance.json",
+      "sha256": "530d1f79d68959dfae438303c318a96e36c2d2c0c54a1634f44a5ff1b937993a",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_122/navigation/seed_04/run-provenance.json",
+      "sha256": "73f6a70c7e806b2778b93e14cf08aa6c5cda80a6b9a703823ba93ee33f1da858",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_133/mapping/run-provenance.json",
+      "sha256": "eb88f0560f5824ca6fb5cc33bb3773118a87b5fa205da08b99860b6cd06507a2",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_133/navigation/seed_00/run-provenance.json",
+      "sha256": "92b7ee13990eed8a302f568096d4de8d1c1ce662d22290574f5b6e5148302b26",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_133/navigation/seed_01/run-provenance.json",
+      "sha256": "1a6eae250908f4a941a1abeb7f3a46c09fc7f325653bae90e77f7aef54fc4cfa",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_133/navigation/seed_02/run-provenance.json",
+      "sha256": "466fe23bbba8983a6fe9ed6dd1c86318171a937d8286bb072685bfbbed33ad76",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_133/navigation/seed_03/run-provenance.json",
+      "sha256": "818ccaac40c175c7be2a187c340d1094575df0df96a37e8cc56afe0f1978e054",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_133/navigation/seed_04/run-provenance.json",
+      "sha256": "7d67c6f1707c0adf731ddac5a813764735cb66345fb985684bf9986a3352a865",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_144/mapping/run-provenance.json",
+      "sha256": "370f553c7f1f1ad3d59ba1271f4df976a49f44f0e054f57b1fdd39346f477230",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_144/navigation/seed_00/run-provenance.json",
+      "sha256": "7d3360ee8b4df28641a04ca0b1244215aa4027f8e39cbbd36fca226440bb22f4",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_144/navigation/seed_01/run-provenance.json",
+      "sha256": "b8fc1a1357b264930ede481424987a84fa1c5f4fd89f0e9e8a3fb393f451c54d",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_144/navigation/seed_02/run-provenance.json",
+      "sha256": "9553545f87e4090741062c0bc19ad0244e6a71a04663e36afac50e06b3fc45e5",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_144/navigation/seed_03/run-provenance.json",
+      "sha256": "6cf5f2eb9f65ebeaac8c55c86ddc051d9772d1d62b6efd1ec26f6f1598fa7cf5",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_144/navigation/seed_04/run-provenance.json",
+      "sha256": "12b3c26871891d075a51803e681e0382e122427f47a068b72e10a11e63927e60",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_155/mapping/run-provenance.json",
+      "sha256": "c3e46e906916906d9ee528c5806a4cae7646b2b2739bab3c57ed3ec6a89b6cb7",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_155/navigation/seed_00/run-provenance.json",
+      "sha256": "5e236b28b167bd597a955c0a7fe01c93b3a18d51fefbdf66a4e5ea04347afbfd",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_155/navigation/seed_01/run-provenance.json",
+      "sha256": "a20387ba4b5d5b6223cf4faefe9181b64d3283d536ca5672e7a22d5beba713ea",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_155/navigation/seed_02/run-provenance.json",
+      "sha256": "cef8b69f8baaa657e2e4c34e91f0b3048e39dfa262400973d337e3715afda5fa",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_155/navigation/seed_03/run-provenance.json",
+      "sha256": "bcbeaca896630064fac12b64a1255d36043dff7d3214b3f6df67abef77f89300",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_155/navigation/seed_04/run-provenance.json",
+      "sha256": "9daa79e269d1ca3de996994c3f8e52d1d9536a58123e6b329f7af3376f064dd5",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_166/mapping/run-provenance.json",
+      "sha256": "5b1f14499e19161b6715e8f6e63733fbd71793adf9e069a50542c22a983b69d8",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_166/navigation/seed_00/run-provenance.json",
+      "sha256": "eb8f6fe726cbe3c908b22c7461a9844f9f08d2669a1837103b64d5f0ff551e4f",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_166/navigation/seed_01/run-provenance.json",
+      "sha256": "a272aa07da9ea76683abda7a05adbb4db0ef980a1bb0474672401fe5170e6c2a",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_166/navigation/seed_02/run-provenance.json",
+      "sha256": "ba53a07fc8d7297e8f8303f9f86ec31d7adc89de8b8ed014a3ef9ba5ac256ae5",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_166/navigation/seed_03/run-provenance.json",
+      "sha256": "7a62d9d3770784dfdc901fcedccb7f791f013a4110d2051aa7b887e17a39f843",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_166/navigation/seed_04/run-provenance.json",
+      "sha256": "b32a46bae47f6e87aeb110b2941e9c710bb1777d5c2fe8e0288843c587ef2ca3",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_177/mapping/run-provenance.json",
+      "sha256": "e993fe9923c09216dd28a1f67b60ed52cc0014f33ac777beee8a411de464b659",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_177/navigation/seed_00/run-provenance.json",
+      "sha256": "ba27b1a84b610b922c45fde8681e7845c1b8e37ec46e09bf7aae9d746ecbb5ae",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_177/navigation/seed_01/run-provenance.json",
+      "sha256": "611655857734c6d8a611e0c9061fb30b696a4ca6e94ca7cd75eeff0c23127d4b",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_177/navigation/seed_02/run-provenance.json",
+      "sha256": "baedc7f9a9e21e3bf1043c7ce3743738726e5a4ff902a01e3386e5538ce4c89d",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_177/navigation/seed_03/run-provenance.json",
+      "sha256": "8d293ebbf3f0a493bf5f697e6ce375ce7ad231d15003681c28aacb3d6a70c829",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_177/navigation/seed_04/run-provenance.json",
+      "sha256": "4b31faf391422066ebb6216d3d0f0ff1bb9eaf032aa051f89b11f5a3b4872d9e",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_188/mapping/run-provenance.json",
+      "sha256": "998261184ba3dfc997ed5f00f4494bf325cb47dfb91fee5084aeda4fe9a685e2",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_188/navigation/seed_00/run-provenance.json",
+      "sha256": "ecc3518352cca2f39c35ce26119d5e5286287ea5fb1c64e3a11025af7823c914",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_188/navigation/seed_01/run-provenance.json",
+      "sha256": "3965aaf6ce37ddf5d10e9c24072bdffb28fa4289ecedfc29ac0c45956c12f528",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_188/navigation/seed_02/run-provenance.json",
+      "sha256": "be675e1e642c736a05b4457123ae11c71c3c610d5182de4b52cf1f47ea96ab64",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_188/navigation/seed_03/run-provenance.json",
+      "sha256": "179d91a85ea156051a756f642a53769d0dbb8d15e8c8e186115e00e13a322411",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_188/navigation/seed_04/run-provenance.json",
+      "sha256": "763f4bee03efbc0cc38229a3e386aa2195490742e3c9151b54727ed919f8ac0e",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_199/mapping/run-provenance.json",
+      "sha256": "868c5ed3449d8aaf35f45ef82123a69326b2c5aa7c9928ce25688f0906d718c8",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_199/navigation/seed_00/run-provenance.json",
+      "sha256": "e253141bea51fb5a561cee20bb8d721a03b060703a3a74f733ee8c65447826ac",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_199/navigation/seed_01/run-provenance.json",
+      "sha256": "94d5f9f283f33a81135abd7305055ee5d47e0190b452faa72ee5c43f86afb904",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_199/navigation/seed_02/run-provenance.json",
+      "sha256": "c3702eaa15c49e5fffeba6641e2130d4a3168ba22b4e879c25ed4ae4c4170a1c",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_199/navigation/seed_03/run-provenance.json",
+      "sha256": "af931e7d11e9dd2a3a5cf1c79666b705e24884db22bdad6cf30223587973954e",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_199/navigation/seed_04/run-provenance.json",
+      "sha256": "7edc5c9bc16349e1c2c3d0ba6ea409597148f06401ef6be7cba32128cbc9b007",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_200/mapping/run-provenance.json",
+      "sha256": "30dfa77ace07d08f9ff67ef1e965b0208fb4060be504c4922faa59abe02af700",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_200/navigation/seed_00/run-provenance.json",
+      "sha256": "c86dfb8f82034321de8bdfc9c642bd2b6bdfd8596634025c0a8a546d55155233",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_200/navigation/seed_01/run-provenance.json",
+      "sha256": "c8f822c28f6dc61f72e48ffdb5be0d86f4754671032eb9242c0075306855a0d6",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_200/navigation/seed_02/run-provenance.json",
+      "sha256": "e8b10d597f0a037a127f8f7f552c5a049d467d3c02fbdb80dd0515237b86703d",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_200/navigation/seed_03/run-provenance.json",
+      "sha256": "9c069f5f6b3d51bfc4ddb833c5d6020bc2cba656c5e2375c4c6b89ef5be28585",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_200/navigation/seed_04/run-provenance.json",
+      "sha256": "2f2586525167b91d7c1ac260eb08b56e89a4f96f9b9846d363c2966f56f92b97",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_211/mapping/run-provenance.json",
+      "sha256": "a9f4e28fc1c30ef8ce3f90e4c9e071ffe3e6bc089c798232855799466dfaee94",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_211/navigation/seed_00/run-provenance.json",
+      "sha256": "4d5251cced4e31ab13501c249669a1ecc8047811ff38115437645d04bfd57a99",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_211/navigation/seed_01/run-provenance.json",
+      "sha256": "73eb27c260aa48acfbf4de14ff52023770b38245fbb9e77da16899f42df757d8",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_211/navigation/seed_02/run-provenance.json",
+      "sha256": "8c2f3bfee9ac69c231c28354190f9facd561c6857a487822c24e29e7b34b2bd5",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_211/navigation/seed_03/run-provenance.json",
+      "sha256": "e55f9c3efc7e9646ac3f4be22f2597f3b2fb9f60769dfe38b1b7a4c974a99ecf",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_211/navigation/seed_04/run-provenance.json",
+      "sha256": "c15cd7e58f9de22d8968bc6f11aa76a10e06050d55b2625efeb86111b3d37b07",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_222/mapping/run-provenance.json",
+      "sha256": "3882b0ea797b5e76b253eab58629ce5e6fa11cbfa227917e3880f6e28294b99e",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_222/navigation/seed_00/run-provenance.json",
+      "sha256": "4a1b3caec709081d8dfae685fb1850244c8eea5fed2f38ef03245ab9f1f41c9a",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_222/navigation/seed_01/run-provenance.json",
+      "sha256": "a172731f2474ba223ce90219d84afaf43cd75e140b490fccbdf48ea5853de9fc",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_222/navigation/seed_02/run-provenance.json",
+      "sha256": "4ad07491be33cc993ad4d95094c2a7a6623b176bec91b4b3a1da8be4fad04615",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_222/navigation/seed_03/run-provenance.json",
+      "sha256": "27d705b12db058e74cb28079432b94aa62af0c20b6fa57a2446b518ee38e0455",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_222/navigation/seed_04/run-provenance.json",
+      "sha256": "a4857769c36c557e0c10bbe9778285bd09c036d1ff9ca7090d7f84d9338dc961",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_233/mapping/run-provenance.json",
+      "sha256": "7823aa8e8a42c901fc3a2c1d17d5b8ffd1e5bc4c5c250e3741df5c1f85d9fe20",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_233/navigation/seed_00/run-provenance.json",
+      "sha256": "489d90aedf08739eff300bd820cd2b880d5a993250db45005bf3c5f86d827770",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_233/navigation/seed_01/run-provenance.json",
+      "sha256": "8463539bad20d2f964328735b52af4087a8b276804fb9b9b02ac9c1d1a947a09",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_233/navigation/seed_02/run-provenance.json",
+      "sha256": "4ce63d5442cea61a1e616235585de77263059b70b254b927fa4905e4dbdeb964",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_233/navigation/seed_03/run-provenance.json",
+      "sha256": "cd329fd7d49b92e26733b9669518978d93ac6304d0f7456501f3d2f56b2eea63",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_233/navigation/seed_04/run-provenance.json",
+      "sha256": "5429c07358a825097d17dfd88d6e9f4748fde4aa9fa763a2b4b394e3da52436e",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_244/mapping/run-provenance.json",
+      "sha256": "59d09e71fb6760e0fba093981a7249b2340fffa77f161cdbb37b0f76b603dfff",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_244/navigation/seed_00/run-provenance.json",
+      "sha256": "583704fc725ff0a4873721de7a505d058064b54cb2b99434dd8279dfdf45fe1f",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_244/navigation/seed_01/run-provenance.json",
+      "sha256": "3c3e989d4674fad5741a9bfe56c8d6d2b609273073498902bcd658cd88d6386e",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_244/navigation/seed_02/run-provenance.json",
+      "sha256": "f2e3d2db795c2246e49c33512f9cc599fcaf22c0000c20aa7bf49f29009bc73a",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_244/navigation/seed_03/run-provenance.json",
+      "sha256": "f66eb68a46ada7e06ecc5fbcbadff61bfc49ae8bf4569ea24a438254b4205b97",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_244/navigation/seed_04/run-provenance.json",
+      "sha256": "bf0a95cdd3f94ab8e6f0f995efc87e6fd3cb1f5200cac4483dbd85a88b396e28",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_255/mapping/run-provenance.json",
+      "sha256": "5b2bf73662734081953f090176ec04a8fd1ecac854f6df56bc1946cc16adee31",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_255/navigation/seed_00/run-provenance.json",
+      "sha256": "04247acb88bba0fbfcf3a6b432ab120589be247ffd3fae85f276911d88f9e512",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_255/navigation/seed_01/run-provenance.json",
+      "sha256": "992f7706fd9d6fffe8338cdbd5fe2bbf48bbef2a7786fe7f77ca6c9574121d2c",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_255/navigation/seed_02/run-provenance.json",
+      "sha256": "eeba6eed8a51cc276f2eee4e3acb068324354edddab9e9d2300c81df6af8c89b",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_255/navigation/seed_03/run-provenance.json",
+      "sha256": "2350e1bf400150ac6c5ab17f274b99cd8f866f0003078ec3e0b30b4574c8cf0d",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_255/navigation/seed_04/run-provenance.json",
+      "sha256": "ebc3f9d53cda9e90493f3f4aa98b1673363fa2c9062efe47aaf73cef2afae9de",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_266/mapping/run-provenance.json",
+      "sha256": "d7347860b8679930e529c2b3e5682ba920a31c897034bcd6b4ac969d1dd0afc5",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_266/navigation/seed_00/run-provenance.json",
+      "sha256": "ff27622e7edc07ffc3ac92cd47ab2e6ad13dba8518853c6d911e42b2b80b26c3",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_266/navigation/seed_01/run-provenance.json",
+      "sha256": "c47a0a5f4433b715d7b6a89349dc9103600a11eeb090b93cd3f2e89b18365bf5",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_266/navigation/seed_02/run-provenance.json",
+      "sha256": "fb526973432583ca10d475ed6f187946abd51fe1256ab463db1cfe727035b9ba",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_266/navigation/seed_03/run-provenance.json",
+      "sha256": "b3d4f420f22253a85bfead77900da6e19b0574735afa799f3ec43452899edc6a",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_266/navigation/seed_04/run-provenance.json",
+      "sha256": "854d82dd304b8f389574db00ce8a3070d9a9f00910aa8999a8cb1262aa582cea",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_277/mapping/run-provenance.json",
+      "sha256": "7da0d7d5a06f7f0f94af5976adc60ae7e4e7834683be7345690d80390e0c6fab",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_277/navigation/seed_00/run-provenance.json",
+      "sha256": "0ddde51acc54fd12e5c08774525ecce5f5c5a1cfadf20bde52749f434e4ee339",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_277/navigation/seed_01/run-provenance.json",
+      "sha256": "942eeb9e91f1d927ba3de38b658fd4daaf3ce346b66f16365aebd7989744a7ed",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_277/navigation/seed_02/run-provenance.json",
+      "sha256": "310124c30426f8bf033cbcb1309454f83b33dd5ee3efc92055634bfcaad43a67",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_277/navigation/seed_03/run-provenance.json",
+      "sha256": "e0852ff1a39077f6dec6ae2fe5b8d2228cbc554ee01c9fcfefe40c793afcffe1",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_277/navigation/seed_04/run-provenance.json",
+      "sha256": "933c42e330ad4c60453e039de3b3b6a7ffb16908d37c01a9cd4a0bbcb7a026d1",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_288/mapping/run-provenance.json",
+      "sha256": "b21cf6c0c16ba3e31830863ae90d9a8ed188196ec3008a05ceebe1ba64e109f6",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_288/navigation/seed_00/run-provenance.json",
+      "sha256": "841b83d5fa99fe4e14edb8428cdb6a57d2c1ae433943d5f5e985e2bb4396bf8d",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_288/navigation/seed_01/run-provenance.json",
+      "sha256": "29d440fef2fe89a7334ea79629b2dd1b1f3163432e1118d8f5234a4e06df3f05",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_288/navigation/seed_02/run-provenance.json",
+      "sha256": "09bb063250fde19ae539aa68d13503ae28816164a6ead0fcfbf9c4e3e1b6f5da",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_288/navigation/seed_03/run-provenance.json",
+      "sha256": "833a6be0de09ec409323b64c51203dee81c9e52fcc7d0515f67317bfaaa7b30b",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_288/navigation/seed_04/run-provenance.json",
+      "sha256": "d7479db33a5a1320e6cefae0b9333bd959e9629f03bf806ee5a47ceccc123f12",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_299/mapping/run-provenance.json",
+      "sha256": "28102487625897fae9fff37c2079a1e1284a96fa9e0e37d2c40ac0c399ff26af",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_299/navigation/seed_00/run-provenance.json",
+      "sha256": "3896846ef91b3cefa5d5370b94182280fbb01aa43daefa05d7a5bc43daedafab",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_299/navigation/seed_01/run-provenance.json",
+      "sha256": "9c216fdcc3a4b6a05a73e6512d31e053eee7c2b5899596ac975aa1859e28dca4",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_299/navigation/seed_02/run-provenance.json",
+      "sha256": "33731c667a496c12e1c9497fbb0af941c7fc764ac2de1fb2800e099056ce801f",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_299/navigation/seed_03/run-provenance.json",
+      "sha256": "12519ac6c28f0f1f639a8c3c28ed57eaba3308f330b058625d240964a39e8330",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/barn30/world_299/navigation/seed_04/run-provenance.json",
+      "sha256": "adc90a4778854402577ae6906d5f2a898a1c971ef09d31b521f6901324c33d14",
+      "verified": true
+    },
+    {
+      "path": "integration/results/v1/full-benchmark-20261104-g/run-provenance.json",
+      "sha256": "14a0df691ec9e47b49f999dbe596ce1bb2177fd4c289df76da7ecb0fc053cba5",
+      "verified": true
+    }
+  ]
+}

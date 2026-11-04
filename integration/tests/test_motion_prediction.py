@@ -4,12 +4,27 @@ import sys
 import unittest
 import numpy as np
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
-from motion_prediction import MotionPredictor, scan_clusters
+from motion_prediction import MotionPredictor, scan_clusters, pose_at_stamp
 
 
 class MotionPredictionTests(unittest.TestCase):
     def setUp(self):
         self.points = np.asarray([[0.,0.],[.04,0.],[.04,.04],[0.,.04]])+[1.,1.]
+
+    def test_scan_pose_interpolates_bracketing_odometry_and_wrapped_yaw(self):
+        poses=[(54.74991666,[0.,0.,0.]),(55.02325,[.027333334,0.,.1])]
+        np.testing.assert_allclose(pose_at_stamp(poses,54.97991667),
+                                   [.023000001,0.,.084146345],atol=1e-8)
+        poses=[(0.,[0.,0.,np.deg2rad(170)]),(.2,[.2,.4,np.deg2rad(-170)])]
+        np.testing.assert_allclose(pose_at_stamp(poses,.1),[.1,.2,np.pi])
+
+    def test_scan_pose_rejects_unbounded_gaps_and_extrapolation(self):
+        self.assertIsNone(pose_at_stamp([],1.))
+        poses=[(0.,[0.,0.,0.]),(1.,[1.,0.,0.])]
+        self.assertIsNone(pose_at_stamp(poses,.5))
+        self.assertIsNone(pose_at_stamp(poses,1.1))
+        self.assertEqual(pose_at_stamp(poses,1.),[1.,0.,0.])
+        self.assertEqual(pose_at_stamp(poses,1.02),[1.,0.,0.])
 
     def test_static_cluster_has_no_forecast(self):
         tracker = MotionPredictor()
@@ -30,6 +45,33 @@ class MotionPredictionTests(unittest.TestCase):
         self.assertEqual(len(predicted),20*len(points))
         np.testing.assert_allclose(tracker.moving_points[:,:2],points)
         np.testing.assert_allclose(tracker.moving_points[:,2:],np.tile(velocity,(len(points),1)))
+
+    def test_surface_motion_ignores_changing_visible_centroid(self):
+        angles=np.linspace(-1.2,1.2,40)
+        shape=np.column_stack((.3*np.cos(angles),.3*np.sin(angles)))+[1.,1.]
+        velocity=np.array([.2,-.1]);tracker=MotionPredictor()
+        for i in range(8):
+            _,tracks=tracker.update([shape[3*i:]+velocity*i*.1],i*.1)
+        self.assertEqual(len(tracks),1)
+        np.testing.assert_allclose(tracks[0,2:],velocity,atol=1e-3)
+
+    def test_static_surface_with_partial_visibility_is_not_moving(self):
+        angles=np.linspace(-1.2,1.2,40)
+        shape=np.column_stack((.3*np.cos(angles),.3*np.sin(angles)))+[1.,1.]
+        tracker=MotionPredictor()
+        for i in range(8):
+            predicted,tracks=tracker.update([shape[3*i:]],i*.1)
+            self.assertEqual(len(predicted),0)
+            self.assertEqual(len(tracks),0)
+
+    def test_partial_surface_keeps_confirmed_motion(self):
+        angles=np.linspace(-1.2,1.2,40)
+        shape=np.column_stack((.3*np.cos(angles),.3*np.sin(angles)))+[1.,1.]
+        velocity=np.array([.2,-.1]);tracker=MotionPredictor()
+        for i in range(6):tracker.update([shape+velocity*i*.1],i*.1)
+        _,tracks=tracker.update([shape[15:25]+velocity*.6],.6)
+        self.assertEqual(len(tracks),1)
+        np.testing.assert_allclose(tracks[0,2:],velocity,atol=1e-3)
 
     def test_robot_translation_and_rotation_are_compensated(self):
         ranges=np.full(300,np.inf);ranges[5:11]=1.

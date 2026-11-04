@@ -19,6 +19,7 @@ public:
 
 private:
   void receive(const sensor_msgs::msg::PointCloud2 &);
+  bool transformPoints(const sensor_msgs::msg::PointCloud2 &);
   bool fresh() const;
   std::mutex mutex_;
   std::vector<std::pair<float, float>> points_;

@@ -4,6 +4,19 @@ import numpy as np
 from scipy.spatial import cKDTree
 
 
+def pose_at_stamp(poses, stamp):
+    if not poses:
+        return None
+    left = next((row for row in reversed(poses) if row[0] <= stamp), None)
+    right = next((row for row in poses if row[0] >= stamp), None)
+    if left is not None and right is not None and 0 < right[0] - left[0] <= .5:
+        delta = np.asarray(right[1]) - left[1]
+        delta[2] = np.arctan2(np.sin(delta[2]), np.cos(delta[2]))
+        return np.asarray(left[1]) + (stamp - left[0]) / (right[0] - left[0]) * delta
+    nearest = min(poses, key=lambda row: abs(row[0] - stamp))
+    return nearest[1] if abs(nearest[0] - stamp) <= .03 else None
+
+
 def scan_groups(base, indices, bins):
     groups = []
     for i, point in enumerate(base):
@@ -33,21 +46,45 @@ def scan_clusters(ranges, angle_min, angle_increment, pose, range_min=.15):
             if len(group)>=4 and np.linalg.norm(np.ptp(group,axis=0))<=1.2]
 
 
+def surface_translation(reference, points):
+    """Fit translation against surface normals instead of a visibility-dependent centroid."""
+    tree = cKDTree(reference)
+    neighbors = reference[tree.query(reference, k=min(5, len(reference)))[1]]
+    centered = neighbors-neighbors.mean(axis=1, keepdims=True)
+    covariance = np.einsum('nki,nkj->nij', centered, centered)
+    normals = np.linalg.eigh(covariance)[1][:, :, 0]
+    shift = points.mean(axis=0)-reference.mean(axis=0)
+    for _ in range(8):
+        distances, indices = tree.query(points-shift)
+        if np.max(distances) < 1e-9:
+            break
+        n = normals[indices]
+        residual = np.sum(n*(points-shift-reference[indices]), axis=1)
+        delta = np.linalg.lstsq(n, residual, rcond=None)[0]
+        shift += delta
+        if np.linalg.norm(delta) < 1e-6:
+            break
+    return shift, np.median(tree.query(points-shift)[0])
+
+
 def track_velocity(history, points):
     if len(history)<4 or history[-1][0]-history[0][0]<.3:
         return None
     stamps = np.asarray([row[0] for row in history])
-    centers = np.asarray([row[1] for row in history])
+    reference = history[0][2]
+    registered = [surface_translation(reference, row[2]) for row in history]
+    if max(row[1] for row in registered) > .04:
+        return None
+    centers = np.asarray([row[0] for row in registered])
     times = stamps-stamps.mean()
     velocity = (times[:,None]*(centers-centers.mean(axis=0))).sum(axis=0)/(times@times)
     residual = np.linalg.norm(centers-centers.mean(axis=0)-times[:,None]*velocity,axis=1)
     if not .08<=np.linalg.norm(velocity)<=1.2 or residual.max()>.04:
         return None
-    eigenvalues,axes = np.linalg.eigh(np.cov(points.T))
+    eigenvalues,axes = np.linalg.eigh(np.cov(reference.T))
     # A visible fragment sliding along a straight surface does not prove surface motion.
     if eigenvalues[0]<.03*eigenvalues[1] and abs(velocity@axes[:,0])<.05:
         return None
-    reference = history[0][2]
     static_error = np.median(cKDTree(reference).query(points)[0])
     moving_error = np.median(cKDTree(reference+velocity*(stamps[-1]-stamps[0])).query(points)[0])
     if static_error-moving_error<=.02:
@@ -62,9 +99,10 @@ def match_clusters(clusters, centers, old):
     for distance,i,j in candidates:
         if distance>.3 or i in matches or j in used:
             continue
-        shift = centers[i]-old[j]['history'][-1][1]
-        error = cKDTree(old[j]['points']+shift).query(clusters[i])[0]
-        if np.median(error)<=.04 and np.linalg.norm(np.ptp(clusters[i],axis=0)-np.ptp(old[j]['points'],axis=0))<=.15:
+        shift,error = surface_translation(old[j]['points'],clusters[i])
+        # Shrinking visibility does not mean the object changed shape.
+        growth = np.ptp(clusters[i],axis=0)-np.ptp(old[j]['points'],axis=0)
+        if np.linalg.norm(shift)<=.3 and error<=.04 and np.max(growth)<=.15:
             matches[i]=j
             used.add(j)
     return matches

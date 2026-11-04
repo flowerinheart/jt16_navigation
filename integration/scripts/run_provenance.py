@@ -46,6 +46,7 @@ def write_provenance(output, inputs=(), parameters=None):
                 *Path('/usr/lib/x86_64-linux-gnu').glob('libgz-msgs10.so.*'),
                 *Path('/opt/ros/jazzy/opt/gz_transport_vendor/lib').glob('libgz-transport13.so.*'),
                 *Path('/opt/ros/jazzy/opt/gz_msgs_vendor/lib').glob('libgz-msgs10.so.*'),
+                *Path('/opt/ros/jazzy/lib/x86_64-linux-gnu').glob('libddsc.so.*'),
                 root/'install/jt16_bringup/lib/jt16_bringup/tf_publisher_probe',
                 root/'install/jt16_bringup/lib/libjt16_prediction_layer.so',
                 root/'install/jt16_bringup/lib/libjt16_timed_obstacle_critic.so',
@@ -53,7 +54,9 @@ def write_provenance(output, inputs=(), parameters=None):
                     'libgzserver_component.so', 'libmppi_controller.so', 'libmppi_critics.so', 'libnav2_rotation_shim_controller.so', 'libdwb_core.so',
                     'libdwb_critics.so', 'libstandard_traj_generator.so', 'libsimple_goal_checker.so',
                     'libnav2_costmap_2d_core.so', 'liblayers.so',
-                    'libnav2_navfn_planner.so', 'libamcl_core.so', 'libcollision_monitor_core.so'))]
+                    'libnav2_navfn_planner.so', 'libnav2_smac_planner_2d.so',
+                    'libamcl_core.so', 'libcollision_monitor_core.so',
+                    'librmw_cyclonedds_cpp.so', 'librmw_fastrtps_cpp.so'))]
     runtime_hashes = {str(path.relative_to(root) if path.is_relative_to(root) else path): hashlib.sha256(path.read_bytes()).hexdigest()
                       for path in binaries if path.is_file()}
     (Path(output) / 'run-provenance.json').write_text(json.dumps({

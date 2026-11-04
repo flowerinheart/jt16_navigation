@@ -18,7 +18,8 @@ source /opt/ros/jazzy/setup.bash
 source "$REPO_ROOT/install/setup.bash"
 set -u
 export GZ_PARTITION="$PARTITION" GZ_IP=127.0.0.1 ROS_LOG_DIR="$ROS_LOG_DIR_TASK"
-export ROS_DOMAIN_ID=10 ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
+export ROS_DOMAIN_ID=${ROS_DOMAIN_ID_OVERRIDE:-$((1+WORLD_ID*7%100))} ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
+export RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}
 export LD_LIBRARY_PATH="$REPO_ROOT/integration/deps/root/opt/ros/jazzy/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 mkdir -p "$OUTPUT"
 PCD="$REPO_ROOT/external/runtime/FAST_LIO_Hesai/PCD/scans.pcd"
@@ -27,31 +28,31 @@ rm -f "$OUTPUT/nav-map/map.yaml" "$OUTPUT/nav-map/map.pgm"
 /usr/bin/python3 "$TASK_ROOT/scripts/build_robot.py"
 gz sdf -p "$TASK_ROOT/models/xlerobot_jt16.urdf" > "$TASK_ROOT/models/xlerobot_jt16.sdf"
 /usr/bin/python3 "$TASK_ROOT/scripts/build_barn_world.py" --world-id "$WORLD_ID" --output "$WORLD"
-gz sim -s -r --headless-rendering "$WORLD" > "$OUTPUT/gazebo.log" 2>&1 & P1=$!
-ros2 run ros_gz_bridge parameter_bridge '/jt16/points_raw/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked' '/lidar_imu@sensor_msgs/msg/Imu[gz.msgs.IMU' '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock' '/ground_truth/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry' '/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist' --ros-args -r /lidar_imu:=/lidar_imu_raw > "$OUTPUT/bridge.log" 2>&1 & P2=$!
-/usr/bin/python3 "$TASK_ROOT/scripts/instant_cloud_adapter.py" > "$OUTPUT/cloud-adapter.log" 2>&1 & P3=$!
-/usr/bin/python3 "$TASK_ROOT/scripts/sim_imu_adapter.py" > "$OUTPUT/imu-adapter.log" 2>&1 & P4=$!
-ros2 launch fast_lio mapping_jt16.launch.py use_sim_time:=true rviz:=false config_file:="$TASK_ROOT/config/jt16_instant.yaml" > "$OUTPUT/fastlio.log" 2>&1 & P5=$!
+setsid gz sim -s -r --headless-rendering "$WORLD" > "$OUTPUT/gazebo.log" 2>&1 & P1=$!
+setsid ros2 run ros_gz_bridge parameter_bridge '/jt16/points_raw/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked' '/lidar_imu@sensor_msgs/msg/Imu[gz.msgs.IMU' '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock' '/ground_truth/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry' '/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist' --ros-args -r /lidar_imu:=/lidar_imu_raw > "$OUTPUT/bridge.log" 2>&1 & P2=$!
+setsid /usr/bin/python3 "$TASK_ROOT/scripts/instant_cloud_adapter.py" > "$OUTPUT/cloud-adapter.log" 2>&1 & P3=$!
+setsid /usr/bin/python3 "$TASK_ROOT/scripts/sim_imu_adapter.py" > "$OUTPUT/imu-adapter.log" 2>&1 & P4=$!
+setsid ros2 launch fast_lio mapping_jt16.launch.py use_sim_time:=true rviz:=false config_file:="$TASK_ROOT/config/jt16_instant.yaml" > "$OUTPUT/fastlio.log" 2>&1 & P5=$!
 /usr/bin/python3 "$TASK_ROOT/scripts/resource_monitor.py" --pids "$P1" "$P2" "$P3" "$P4" "$P5" --output "$OUTPUT/resources.json" > "$OUTPUT/resources.log" 2>&1 & PM=$!
 cleanup(){
   kill -USR1 "$PM" 2>/dev/null || true
   wait "$PM" 2>/dev/null || true
   local pids=("$P1" "$P2" "$P3" "$P4" "$P5")
-  kill "${pids[@]}" 2>/dev/null || true
+  for pid in "${pids[@]}"; do kill -TERM -- "-$pid" 2>/dev/null || true; done
   for _ in {1..20}; do
     local alive=0
     for pid in "${pids[@]}"; do
-      if kill -0 "$pid" 2>/dev/null; then alive=1; break; fi
+      if kill -0 -- "-$pid" 2>/dev/null; then alive=1; break; fi
     done
     (( alive == 0 )) && break
     sleep 0.1
   done
-  kill -KILL "${pids[@]}" 2>/dev/null || true
+  for pid in "${pids[@]}"; do kill -KILL -- "-$pid" 2>/dev/null || true; done
   wait "${pids[@]}" 2>/dev/null || true
 }
 trap cleanup EXIT
 /usr/bin/python3 "$TASK_ROOT/scripts/follow_barn_path.py" --world-id "$WORLD_ID" --path "$PATH_FILE" --simulation-world "$WORLD" --output "$OUTPUT" --max-linear "$MAP_MAX_LINEAR" --max-angular "$MAP_MAX_ANGULAR" --timeout "$MAP_TIMEOUT"
-ros2 service call /map_save std_srvs/srv/Trigger '{}' > "$OUTPUT/map-save.log"
+timeout -k 5s 30s ros2 service call /map_save std_srvs/srv/Trigger '{}' > "$OUTPUT/map-save.log"
 if [ -s "$PCD" ]; then
   cp "$PCD" "$OUTPUT/map.pcd"
   /usr/bin/python3 "$TASK_ROOT/scripts/pcd_to_occupancy.py" --pcd "$OUTPUT/map.pcd" --trajectory "$OUTPUT/mapping-trajectories.npz" --output "$OUTPUT/nav-map" > "$OUTPUT/map-conversion.log"

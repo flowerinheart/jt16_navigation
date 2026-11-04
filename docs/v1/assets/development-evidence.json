@@ -1,0 +1,20 @@
+{
+  "scope": "Candidate G Dev16; not full-benchmark acceptance",
+  "source_results": "/home/haojiema/code/amd_robot/ref_arch/AMD_X100_Robotics_DevKit_1.0.3/lidar_slam/jt16_navigation/integration/results/v1/dev16-candidate-g",
+  "sha256": {
+    "integration/results/v1/dev16-candidate-g/development-summary.json": "66770cee9eae1d6103afaf9fb262029bd82d264ea84babca82fe40f96ee6dcfd",
+    "integration/results/v1/dev16-candidate-g/arena6/small_warehouse_obs10/seed_00/nav2-goal.json": "d31d375132b70c50fb2cb2575228f7462ffc418fbfdd1a9f9e41cdad0aa23b0c",
+    "integration/results/v1/dev16-candidate-g/arena6/small_warehouse_obs10/seed_00/navigation-trajectories.npz": "0af4502fcb80f263531d30bb30074f945ef21343936ce795fe9b67b5b39277a4",
+    "integration/results/v1/dev16-candidate-g/arena6/small_warehouse_obs10/seed_00/run-provenance.json": "fe9e6717666987c810ab75bdc02b739d52f1ff475ba6e827e1db063469e0c3d3",
+    "integration/results/v1/dev16-candidate-g/arena6/map2_obs05/seed_00/nav2-goal.json": "3f99dc4ce5a8d49525c456762ac559f26ebff30f83bf07505f3019976f989f49",
+    "integration/results/v1/dev16-candidate-g/arena6/map2_obs05/seed_00/navigation-trajectories.npz": "aae55e7a7b768aaac811c541147c8ef358934017b3b454efe47b3be10f026560",
+    "integration/results/v1/dev16-candidate-g/arena6/map2_obs05/seed_00/run-provenance.json": "50df86ac64394ef426638ef0c3dfe16eef90af91d199c371f47418174723ecc3",
+    "integration/results/v1/dev16-candidate-g/arena6/map5_obs10/seed_00/nav2-goal.json": "bc9029b117f22b70238578fecbe8a70060fc0f95bb0a29d20a5e10640711090f",
+    "integration/results/v1/dev16-candidate-g/arena6/map5_obs10/seed_00/navigation-trajectories.npz": "785fad3ce634089c18f721a16788937e3e92f0176a1cd99d184b219f5be56700",
+    "integration/results/v1/dev16-candidate-g/arena6/map5_obs10/seed_00/run-provenance.json": "ead8ff02b471a65b831013e560aa347c65acb4aff4a7a6426074f19e6b3a3c7d",
+    "docs/v1/assets/navigation-comparison.png": "8ee89fe68eb62e0368cde2f7f2160f4dd1dd3942ee780272b78e66ac81e94d6d",
+    "docs/v1/assets/mapping-comparison.png": "47a6e6cd406190bea945bbca1c43b9b22896874fa656c7485cdee64249478076",
+    "docs/v1/assets/replay-poster.png": "7bee843bcce82adb1ebca48b1e17066eea21a78cf4a9ce1a081e738b5f03fffa",
+    "docs/v1/assets/arena-replay.mp4": "9e94fb56c21b6df3da70e03f50264af523fc540a900ca06a3acfd5dc8b089341"
+  }
+}

@@ -16,6 +16,7 @@ set +u;source /opt/ros/jazzy/setup.bash;source "$REPO_ROOT/install/setup.bash";s
 export GZ_PARTITION="$PARTITION" GZ_IP=127.0.0.1 ROS_LOG_DIR="$LOG_DIR" LD_LIBRARY_PATH="$REPO_ROOT/integration/deps/root/opt/ros/jazzy/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 case "$WORLD_NAME" in small_warehouse) WORLD_CODE=1;;map2) WORLD_CODE=2;;map5) WORLD_CODE=3;;esac
 export ROS_DOMAIN_ID=${ROS_DOMAIN_ID_OVERRIDE:-$((1+(WORLD_CODE*47+OBSTACLES*11+SEED*31)%100))} ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
+export RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}
 if [ "${ROBOT_PREBUILT:-0}" != 1 ];then
  /usr/bin/python3 "$TASK_ROOT/scripts/build_robot.py"
  gz sdf -p "$TASK_ROOT/models/xlerobot_jt16.urdf" > "$TASK_ROOT/models/xlerobot_jt16.sdf"

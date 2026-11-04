@@ -23,16 +23,24 @@ def mppi_parameters(base, official):
     mppi['CostCritic']['near_collision_cost'] = 253
     mppi['CostCritic']['cost_weight'] = 6.0
     mppi['CostCritic']['critical_cost'] = 1000.0
+    # A farther follow target and stronger progress cost avoid persistent slow rollouts.
+    mppi['PathFollowCritic'].update(cost_weight=15.0, offset_from_furthest=15)
+    mppi['GoalCritic']['cost_weight'] = 10.0
+    mppi['PathAlignCritic']['cost_weight'] = 14.0
+    mppi['regenerate_noises'] = False
     mppi['GoalAngleCritic']['threshold_to_consider'] = controller['goal_checker']['xy_goal_tolerance']
-    mppi['PathAngleCritic']['threshold_to_consider'] = controller['goal_checker']['xy_goal_tolerance']
+    # Path bearing stops in the native near-goal region; final pose owns the endpoint.
+    mppi['PathAngleCritic']['threshold_to_consider'] = mppi['PathAlignCritic']['threshold_to_consider']
     mppi['PathAngleCritic']['max_angle_to_furthest'] = 0.4
+    mppi['PathAngleCritic']['cost_weight'] = 8.0
     mppi['critics'].insert(1,'TimedObstacleCritic')
-    mppi['TimedObstacleCritic'] = {'enabled':True,'cost_weight':1000.0,'clearance_m':.35}
+    mppi['TimedObstacleCritic'] = {'enabled':True,'cost_weight':1000.0,'clearance_m':.75}
     result['local_costmap']['local_costmap']['ros__parameters']['motion_prediction']['enabled'] = False
-    # The native shim finishes yaw at the unchanged position/heading tolerance.
+    result['global_costmap']['global_costmap']['ros__parameters']['motion_prediction']['enabled'] = True
+    # Shim aligns the initial path; MPPI scores later turns and goal heading in time.
     mppi.update(plugin='nav2_rotation_shim_controller::RotationShimController',
                 primary_controller='nav2_mppi_controller::MPPIController',
-                rotate_to_goal_heading=True, rotate_to_heading_once=True,
+                rotate_to_goal_heading=False, rotate_to_heading_once=True,
                 rotate_to_heading_angular_vel=dwb['max_vel_theta'],
                 max_angular_accel=dwb['acc_lim_theta'],
                 angular_dist_threshold=controller['goal_checker']['yaw_goal_tolerance'],

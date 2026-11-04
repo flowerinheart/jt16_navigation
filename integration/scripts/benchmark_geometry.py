@@ -10,6 +10,18 @@ def dilate_occupied(occupied):
     return binary_dilation(occupied, structure=np.ones((3, 3), dtype=bool))
 
 
+def mapping_input_failure(gt, lio, now):
+    for name, samples in (('ground_truth', gt), ('lio', lio)):
+        if not samples:
+            return f'missing_{name}'
+        sample = samples[-1]
+        if len(sample) != 4 or not np.isfinite(sample).all():
+            return f'invalid_{name}'
+        if not math.isfinite(now) or not -.1 <= now - sample[0] <= 1.:
+            return f'stale_{name}'
+    return None
+
+
 def shortest_path(occupied, start, goal):
     def free(cell):
         return (0 <= cell[0] < occupied.shape[0] and

@@ -38,6 +38,8 @@ void TimedObstacleCritic::initialize()
   {
     throw std::runtime_error("Invalid timed obstacle critic parameters");
   }
+  RCLCPP_INFO(logger_, "TimedObstacleCritic uses weight %.3f, clearance %.3f m",
+    weight_, clearance_);
   const double inf = std::numeric_limits<double>::infinity();
   bounds_ = {inf, inf, -inf, -inf};
   const auto footprint = costmap_ros_->getRobotFootprint();

@@ -10,8 +10,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--results', type=Path, required=True)
 parser.add_argument('--mapping-only', action='store_true')
 args = parser.parse_args()
-mapping = [json.loads(path.read_text()) for path in sorted(args.results.glob('world_*/mapping/mapping-result.json'))]
-map_metrics = [json.loads(path.read_text()) for path in sorted(args.results.glob('world_*/mapping/map-metrics.json'))]
+mapping_paths = sorted(args.results.glob('world_*/mapping/mapping-result.json'))
+mapping = [json.loads(path.read_text()) for path in mapping_paths]
+map_metrics = []
 resources = [json.loads(path.read_text()) for path in sorted(args.results.glob('world_*/mapping/resources.json'))]
 terminal = {}
 for run in mapping:
@@ -19,18 +20,36 @@ for run in mapping:
 
 
 def values(name):
-    return np.asarray([run[name] for run in mapping if name in run], dtype=float)
+    data = np.asarray([run[name] for run in valid_mapping if run.get(name) is not None], dtype=float)
+    return data[np.isfinite(data)]
 
 
 summary = {'mapping_runs_scored': len(mapping), 'mapping_terminal_states': terminal}
+valid_mapping = []
+for path, run in zip(mapping_paths, mapping):
+    files = [path.parent / name for name in ('mapping-trajectories.npz', 'map.pcd',
+             'nav-map/map.yaml', 'nav-map/map.pgm', 'map-bundle-metadata.json', 'map-metrics.json')]
+    if (run.get('terminal_state') == 'COMPLETE' and run.get('map_valid', True) and
+            run.get('paired_samples', 0) >= 6 and
+            all(run.get(key) is not None and np.isfinite(run[key]) for key in
+                ('ate_rmse_m', 'translation_p95_m', 'yaw_rmse_rad')) and
+            all(file.is_file() and file.stat().st_size > 0 for file in files)):
+        metrics = json.loads((path.parent / 'map-metrics.json').read_text())
+        if all(metrics.get(key) is not None and np.isfinite(metrics[key]) for key in ('occupied_f1', 'occupied_iou')):
+            valid_mapping.append(run)
+            map_metrics.append(metrics)
+summary.update(valid_mapping_runs=len(valid_mapping), invalid_mapping_runs=len(mapping)-len(valid_mapping))
 for metric in ('ate_rmse_m', 'translation_p95_m', 'yaw_rmse_rad','initialization_time_s','odometry_update_rate_hz','rpe_translation_rmse_m_1s','rpe_yaw_rmse_rad_1s','static_drift_final_m','static_drift_p95_m','static_yaw_drift_rad'):
     data = values(metric)
+    summary[metric] = {'count': int(len(data)), 'missing_count': len(mapping)-len(data)}
     if len(data):
-        summary[metric] = {'mean': float(data.mean()), 'median': float(np.median(data)),
-                           'p95': float(np.percentile(data, 95)), 'count': int(len(data))}
+        summary[metric].update(mean=float(data.mean()), median=float(np.median(data)),
+                              p95=float(np.percentile(data, 95)))
 for metric in ('occupied_precision','occupied_recall','occupied_f1','occupied_iou','wall_distance_mean_m','wall_distance_p95_m'):
     data=np.asarray([run[metric] for run in map_metrics if run.get(metric) is not None],dtype=float)
-    if len(data):summary[metric]={'mean':float(data.mean()),'median':float(np.median(data)),'p95':float(np.percentile(data,95)),'count':int(len(data))}
+    data=data[np.isfinite(data)]
+    summary[metric]={'count':int(len(data)), 'missing_count':len(mapping)-len(data)}
+    if len(data):summary[metric].update(mean=float(data.mean()),median=float(np.median(data)),p95=float(np.percentile(data,95)))
 for metric in ('max_rss_mb','mean_cpu_percent','real_time_factor'):
     data=np.asarray([run[metric] for run in resources if run.get(metric) is not None],dtype=float)
     if len(data):summary[metric]={'mean':float(data.mean()),'median':float(np.median(data)),'p95':float(np.percentile(data,95)),'count':int(len(data))}

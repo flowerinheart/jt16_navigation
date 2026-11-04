@@ -10,7 +10,7 @@ WORLD="$TASK_ROOT/benchmarks/generated/barn_${WORLD_ID}.sdf";SOURCE_WORLD="$REPO
 SHORTEST=$(/usr/bin/python3 "$TASK_ROOT/scripts/barn_path_length.py" "$PATH_FILE")
 MAPPING_RESULT="$(dirname "$(dirname "$MAP_YAML")")/mapping-result.json"
 MAPPING_TRAJECTORY="$(dirname "$MAPPING_RESULT")/mapping-trajectories.npz"
-NAV_GOAL=$(jq -er 'select(.lio_final_xyyaw|type=="array" and length>=2)|.lio_final_xyyaw[0:2]|@tsv' "$MAPPING_RESULT" 2>/dev/null || true)
+NAV_GOAL=$(jq -er 'select(.terminal_state == "COMPLETE" and .map_valid != false)|select(.lio_final_xyyaw|type=="array" and length>=2)|.lio_final_xyyaw[0:2]|@tsv' "$MAPPING_RESULT" 2>/dev/null || true)
 if [ -z "$NAV_GOAL" ]; then
   mkdir -p "$OUTPUT"
   /usr/bin/python3 - "$WORLD_ID" "$SEED" "$OUTPUT" <<'PY'
@@ -29,6 +29,7 @@ PARTITION="jt16_barn_nav_${WORLD_ID}_${SEED}_$$";ROS_LOG_DIR_TASK=$(mktemp -d /t
 set +u;source /opt/ros/jazzy/setup.bash;source "$REPO_ROOT/install/setup.bash";set -u
 export GZ_PARTITION="$PARTITION" GZ_IP=127.0.0.1 ROS_LOG_DIR="$ROS_LOG_DIR_TASK" LD_LIBRARY_PATH="$REPO_ROOT/integration/deps/root/opt/ros/jazzy/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 export ROS_DOMAIN_ID=${ROS_DOMAIN_ID_OVERRIDE:-$((1+(WORLD_ID*7+SEED*31)%100))} ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST
+export RMW_IMPLEMENTATION=${RMW_IMPLEMENTATION:-rmw_cyclonedds_cpp}
 mkdir -p "$OUTPUT"
 PARAMS="${NAV2_PARAMS_FILE:-$OUTPUT/nav2-params.yaml}"
 if [ -z "${NAV2_PARAMS_FILE:-}" ];then /usr/bin/python3 "$TASK_ROOT/scripts/build_mppi_parameters.py" --base "$REPO_ROOT/install/jt16_bringup/share/jt16_bringup/config/nav2_params.yaml" --output "$PARAMS";fi

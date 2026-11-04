@@ -15,6 +15,7 @@ from scipy.spatial.transform import Rotation
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from run_provenance import write_provenance
+from benchmark_geometry import mapping_input_failure
 
 
 parser = argparse.ArgumentParser()
@@ -64,7 +65,7 @@ for index in range(1, len(path) - 1):
         waypoints.append(path[index])
 waypoints.append(path[-1])
 
-rclpy.init()
+rclpy.init(args=['--ros-args', '-p', 'use_sim_time:=true'])
 node = Node('barn_mapping_path_follower')
 publisher = node.create_publisher(Twist, '/cmd_vel', 10)
 gt, lio = [], []
@@ -89,14 +90,22 @@ warmup_deadline = time.monotonic() + args.warmup
 while time.monotonic() < warmup_deadline:
     publisher.publish(Twist())
     rclpy.spin_once(node, timeout_sec=.03)
+input_deadline = time.monotonic() + 15.
+input_failure = mapping_input_failure(gt, lio, node.get_clock().now().nanoseconds * 1e-9)
+while time.monotonic() < input_deadline:
+    rclpy.spin_once(node, timeout_sec=.03)
+    input_failure = mapping_input_failure(gt, lio, node.get_clock().now().nanoseconds * 1e-9)
+    if input_failure is None:
+        break
+    publisher.publish(Twist())
 motion_start_stamp = gt[-1][0] if gt else None
-
 deadline = time.monotonic() + args.timeout
 target = 1
-while time.monotonic() < deadline and target < len(waypoints):
+while input_failure is None and time.monotonic() < deadline and target < len(waypoints):
     rclpy.spin_once(node, timeout_sec=.03)
-    if not gt:
-        continue
+    input_failure = mapping_input_failure(gt, lio, node.get_clock().now().nanoseconds * 1e-9)
+    if input_failure is not None:
+        break
     position=np.asarray(gt[-1][1:3])
     delta = waypoints[target] - position
     distance = float(np.linalg.norm(delta))
@@ -114,7 +123,10 @@ for _ in range(15):
 
 result = {
     'world_id': args.world_id,
-    'terminal_state': 'COMPLETE' if target == len(waypoints) else 'TIMEOUT',
+    'terminal_state': 'INPUT_FAILURE' if input_failure else ('COMPLETE' if target == len(waypoints) else 'TIMEOUT'),
+    'input_failure': input_failure,
+    'path_complete': target == len(waypoints),
+    'map_valid': False,
     'waypoints_total': len(waypoints), 'waypoints_reached': target,
     'gt_samples': len(gt), 'lio_samples': len(lio),
 }
@@ -157,7 +169,12 @@ if len(gt) > 5 and len(lio) > 5:
             estimated_delta=estimated_xy[step:]-estimated_xy[:-step];truth_delta=truth_xy[step:]-truth_xy[:-step]
             result['rpe_translation_rmse_m_1s']=float(np.sqrt(np.mean(np.linalg.norm(estimated_delta-truth_delta,axis=1)**2)))
             estimated_yaw=np.unwrap(estimated[:count,3]);truth_yaw=np.unwrap(truth[:count,3]);rpe_yaw=(estimated_yaw[step:]-estimated_yaw[:-step])-(truth_yaw[step:]-truth_yaw[:-step]);result['rpe_yaw_rmse_rad_1s']=float(np.sqrt(np.mean(rpe_yaw**2)))
-(args.output / 'mapping-result.json').write_text(json.dumps(result, indent=2) + '\n')
+if result['terminal_state'] == 'COMPLETE' and (
+        result.get('paired_samples', 0) < 6 or
+        not all(math.isfinite(result.get(key, math.nan)) for key in
+                ('ate_rmse_m', 'translation_p95_m', 'yaw_rmse_rad'))):
+    result.update(terminal_state='INPUT_FAILURE', input_failure='invalid_paired_trajectory')
+(args.output / 'mapping-result.json').write_text(json.dumps(result, indent=2, allow_nan=False) + '\n')
 np.savez_compressed(args.output / 'mapping-trajectories.npz', gt=np.asarray(gt), lio=np.asarray(lio))
 np.savez_compressed(args.output/'input-diagnostics.npz',raw_imu=np.asarray(raw_imu),adapted_imu=np.asarray(adapted_imu),lio_attitude=np.asarray(lio_attitude),reported_twist=np.asarray(reported_twist))
 print(json.dumps(result, indent=2))

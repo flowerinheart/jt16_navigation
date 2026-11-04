@@ -18,13 +18,79 @@ sys.path.insert(0, str(SCRIPTS))
 from benchmark_geometry import (base_pose, cpu_delta, dilate_occupied, covariance_valid,
                                 dynamic_clearances, localization_metrics,
                                 nearest_time_index, shortest_path, static_collision, tf_valid,
-                                obstacle_observations_fresh)
+                                obstacle_observations_fresh, mapping_input_failure)
 from sensor_geometry import self_returns, pose_twist, sensor_position, world_specific_force
 from navigation_metrics import score_navigation,motion_metrics,mission_trajectory
 from build_mppi_parameters import mppi_parameters
+from run_development_set import run_development_set
+from unittest.mock import patch
 
 
 class GeometryTests(unittest.TestCase):
+    def test_terminal_observation_drain_is_bounded_and_keeps_mission_end(self):
+        source=(SCRIPTS/'run_nav2_goal.py').read_text()
+        code=source[source.index('observation_deadline='):source.index("summary={'result':'PROCESS_FAILURE'",source.index('observation_deadline='))]
+        class Clock:
+            def __init__(self):self.now=0.
+            def monotonic(self):self.now+=.2;return self.now
+        for count,deliver in ((0,True),(2,True),(2,False)):
+            stamps={};calls=[]
+            def spin(*args,**kwargs):
+                calls.append(1)
+                if deliver:stamps[len(calls)-1]=5.
+            namespace={'time':Clock(),'math':math,'obstacle_count':count,
+                       'obstacle_stamps':stamps,'mission_end':5.,'navigator':object(),
+                       'rclpy':SimpleNamespace(spin_once=spin)}
+            exec(code,namespace)
+            self.assertEqual(namespace['mission_end'],5.)
+            if count==0 or deliver:self.assertEqual(len(calls),0 if count==0 else 2)
+            else:self.assertTrue(0<len(calls)<=11)
+
+    def test_development_runner_records_missing_map_and_continues_arena(self):
+        manifest={'name':'mixed','navigation_case_count':2,'entries':[
+            {'id':'barn','dataset':'BARN','world_id':22,'seed':0},
+            {'id':'arena','dataset':'Arena','world':'map2','obstacles':5,'seed':0}]}
+        calls=[]
+        def execute(command, **kwargs):
+            calls.append(Path(command[1]).name)
+            if calls[-1]=='run_arena_navigation.sh':
+                run=Path(command[-1]);run.mkdir(parents=True)
+                (run/'nav2-goal.json').write_text(json.dumps({'result':'SUCCEEDED','scored_success':True,'collision':False}))
+            return SimpleNamespace(returncode=0)
+        with tempfile.TemporaryDirectory() as temp, patch('run_development_set.subprocess.run',side_effect=execute):
+            output=Path(temp)/'results'
+            summary=run_development_set(manifest,output)
+            self.assertEqual(calls,['run_barn_mapping.sh','run_arena_navigation.sh'])
+            self.assertEqual(summary['strict_successes'],1)
+            self.assertEqual(summary['entries'][0]['result'],'MISSING_MAP')
+            self.assertEqual(summary['valid_maps'],0)
+            with self.assertRaises(FileExistsError):run_development_set(manifest,output)
+            duplicate={**manifest,'entries':[manifest['entries'][0],{**manifest['entries'][0],'id':'other'}]}
+            with self.assertRaises(ValueError):run_development_set(duplicate,Path(temp)/'duplicate')
+
+    def test_mapping_requires_finite_fresh_inputs(self):
+        valid = [[10., 0., 0., 0.]]
+        self.assertIsNone(mapping_input_failure(valid, valid, 10.5))
+        for samples, expected in (([], 'missing_lio'),
+                                  ([[10., math.nan, 0., 0.]], 'invalid_lio'),
+                                  ([[8., 0., 0., 0.]], 'stale_lio'),
+                                  ([[11., 0., 0., 0.]], 'stale_lio')):
+            self.assertEqual(mapping_input_failure(valid, samples, 10.), expected)
+        self.assertEqual(mapping_input_failure([], valid, 10.), 'missing_ground_truth')
+
+    def test_mapping_metadata_rejects_path_complete_without_lio(self):
+        with tempfile.TemporaryDirectory() as temp:
+            run=Path(temp)
+            result={'terminal_state':'COMPLETE','lio_samples':0,'map_valid':False}
+            (run/'mapping-result.json').write_text(json.dumps(result))
+            (run/'map-metrics.json').write_text(json.dumps({'occupied_f1':.9,'occupied_iou':.8}))
+            command=subprocess.run([sys.executable,str(SCRIPTS/'write_map_bundle_metadata.py'),
+                                    '--run',temp,'--world-id','277'],capture_output=True,text=True)
+            self.assertNotEqual(command.returncode,0)
+            self.assertIn('incomplete mapping inputs or map bundle',command.stderr)
+            self.assertFalse((run/'map-bundle-metadata.json').exists())
+            self.assertEqual(json.loads((run/'mapping-result.json').read_text()),result)
+
     def test_obstacle_heartbeat_requires_every_actor(self):
         self.assertTrue(obstacle_observations_fresh({},0,10.))
         self.assertTrue(obstacle_observations_fresh({0:9.8,1:10.},2,10.))
@@ -52,6 +118,20 @@ class GeometryTests(unittest.TestCase):
             summary=json.loads((output/'nav2-goal.json').read_text())
             self.assertEqual(summary['result'],'MISSING_LIO_ODOMETRY')
             self.assertFalse(summary['scored_success'])
+
+    def test_barn_navigation_rejects_incomplete_mapping_with_final_pose(self):
+        for data in ({'terminal_state':'TIMEOUT','lio_final_xyyaw':[10.,0.,0.]},
+                     {'terminal_state':'COMPLETE','map_valid':False,'lio_final_xyyaw':[10.,0.,0.]}):
+            with self.subTest(data=data), tempfile.TemporaryDirectory() as temp:
+                root=Path(temp);mapping=root/'mapping';maps=mapping/'nav-map';maps.mkdir(parents=True)
+                (mapping/'mapping-result.json').write_text(json.dumps(data))
+                path=maps/'map.yaml';path.write_text('{}')
+                output=root/'navigation'
+                result=subprocess.run(['bash',str(SCRIPTS/'run_barn_navigation.sh'),
+                                       '22','0',str(path),str(output)],capture_output=True,text=True)
+                self.assertNotEqual(result.returncode,0)
+                self.assertFalse(json.loads((output/'nav2-goal.json').read_text())['scored_success'])
+                self.assertFalse((output/'gazebo.log').exists())
 
     def test_mapping_exit_requires_complete_path(self):
         tree=ast.parse((SCRIPTS/'follow_barn_path.py').read_text())
@@ -86,6 +166,49 @@ class GeometryTests(unittest.TestCase):
                 self.assertIn('Incomplete mapping bundle',result.stderr)
                 self.assertEqual(result_path.read_text(),content)
                 self.assertEqual(list(Path(temp).glob('world_*')),[mapping.parent])
+
+    def test_mapping_batch_records_failure_and_runs_remaining_worlds(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp);scripts=root/'scripts';scripts.mkdir()
+            manifests=root/'benchmarks/manifests';manifests.mkdir(parents=True)
+            (manifests/'barn30.json').write_text(json.dumps({'entries':[{'world_id':0},{'world_id':1}]}))
+            runner=scripts/'run_barn30_mapping.sh';runner.write_bytes((SCRIPTS/runner.name).read_bytes())
+            (scripts/'run_barn_mapping.sh').write_text('mkdir -p "$2"\nif [ "$1" = 0 ]; then exit 1; fi\necho \'{"terminal_state":"COMPLETE","map_valid":true}\' > "$2/mapping-result.json"\n')
+            (scripts/'score_v0.py').write_bytes((SCRIPTS/'score_v0.py').read_bytes())
+            output=root/'results'
+            result=subprocess.run(['bash',str(runner),str(output)],capture_output=True,text=True,timeout=5)
+            self.assertEqual(result.returncode,1)
+            summary=json.loads((output/'mapping-summary.json').read_text())
+            self.assertEqual(summary['mapping_runs_scored'],2)
+            self.assertEqual(summary['mapping_terminal_states'],{'PROCESS_FAILURE':1,'COMPLETE':1})
+
+    def test_mapping_summary_counts_missing_and_nonfinite_metrics(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root=Path(temp)
+            for world,ate in ((0,.2),(1,math.nan),(2,.01)):
+                run=root/f'world_{world:03d}/mapping';run.mkdir(parents=True)
+                data={'terminal_state':'COMPLETE','map_valid':True,'paired_samples':6,
+                      'ate_rmse_m':ate,'translation_p95_m':.3,'yaw_rmse_rad':.01}
+                (run/'mapping-result.json').write_text(json.dumps(data))
+                if world==2:
+                    (run/'map-metrics.json').write_text(json.dumps({'occupied_f1':1.,'occupied_iou':1.}))
+                if world==0:
+                    for name in ('mapping-trajectories.npz','map.pcd','nav-map/map.yaml',
+                                 'nav-map/map.pgm','map-bundle-metadata.json'):
+                        path=run/name;path.parent.mkdir(exist_ok=True);path.write_text('fixture')
+                    (run/'map-metrics.json').write_text(json.dumps({'occupied_f1':.9,'occupied_iou':.8}))
+            result=subprocess.run([sys.executable,str(SCRIPTS/'score_v0.py'),'--results',temp,
+                                   '--mapping-only'],capture_output=True,text=True,timeout=5)
+            self.assertEqual(result.returncode,0,result.stderr)
+            summary=json.loads((root/'mapping-summary.json').read_text())
+            self.assertEqual(summary['valid_mapping_runs'],1)
+            self.assertEqual(summary['invalid_mapping_runs'],2)
+            self.assertEqual(summary['ate_rmse_m']['count'],1)
+            self.assertEqual(summary['ate_rmse_m']['missing_count'],2)
+            self.assertEqual(summary['ate_rmse_m']['mean'],.2)
+            self.assertEqual(summary['occupied_f1']['count'],1)
+            self.assertEqual(summary['occupied_f1']['mean'],.9)
+            self.assertEqual(summary['occupied_f1']['missing_count'],2)
 
     def test_mission_window_is_inclusive_and_legacy_window_is_unchanged(self):
         rows=[[0.,0.,0.,float(i)] for i in range(4)]
@@ -135,6 +258,8 @@ class GeometryTests(unittest.TestCase):
         official={'controller_server':{'ros__parameters':{'FollowPath':{
             'plugin':'nav2_mppi_controller::MPPIController','CostCritic':{'consider_footprint':False},
             'critics':['ConstraintCritic','CostCritic','PathFollowCritic'],
+            'GoalCritic':{'cost_weight':5.0},'PathAlignCritic':{'cost_weight':14.0,'threshold_to_consider':.5},
+            'regenerate_noises':True,
             'PathFollowCritic':{'cost_weight':5.0},'GoalAngleCritic':{'threshold_to_consider':.5},
             'PathAngleCritic':{'threshold_to_consider':.5,'max_angle_to_furthest':1.0}}}}}
         result=mppi_parameters(base,official)
@@ -142,6 +267,7 @@ class GeometryTests(unittest.TestCase):
         mppi=result['controller_server']['ros__parameters'].pop('FollowPath')
         expected=deepcopy(before);dwb=expected['controller_server']['ros__parameters'].pop('FollowPath')
         expected['local_costmap']['local_costmap']['ros__parameters']['motion_prediction']['enabled']=False
+        expected['global_costmap']['global_costmap']['ros__parameters']['motion_prediction']['enabled']=True
         self.assertEqual(result,expected)
         self.assertEqual(mppi['vx_max'],dwb['max_vel_x'])
         self.assertEqual(mppi['vx_min'],dwb['min_vel_x'])
@@ -151,16 +277,21 @@ class GeometryTests(unittest.TestCase):
         self.assertEqual(mppi['CostCritic']['near_collision_cost'],253)
         self.assertEqual(mppi['CostCritic']['cost_weight'],6.0)
         self.assertEqual(mppi['CostCritic']['critical_cost'],1000.0)
-        self.assertEqual(mppi['PathFollowCritic']['cost_weight'],5.0)
+        self.assertEqual(mppi['PathFollowCritic']['cost_weight'],15.0)
+        self.assertEqual(mppi['PathFollowCritic']['offset_from_furthest'],15)
+        self.assertEqual(mppi['GoalCritic']['cost_weight'],10.0)
+        self.assertEqual(mppi['PathAlignCritic']['cost_weight'],14.0)
+        self.assertFalse(mppi['regenerate_noises'])
         self.assertEqual(mppi['GoalAngleCritic']['threshold_to_consider'],
                          before['controller_server']['ros__parameters']['goal_checker']['xy_goal_tolerance'])
-        self.assertEqual(mppi['PathAngleCritic']['threshold_to_consider'],mppi['GoalAngleCritic']['threshold_to_consider'])
+        self.assertEqual(mppi['PathAngleCritic']['threshold_to_consider'],
+                         mppi['PathAlignCritic']['threshold_to_consider'])
         self.assertEqual(mppi['PathAngleCritic']['max_angle_to_furthest'],.4)
         self.assertEqual(mppi['critics'][1],'TimedObstacleCritic')
-        self.assertEqual(mppi['TimedObstacleCritic'],{'enabled':True,'cost_weight':1000.0,'clearance_m':.35})
+        self.assertEqual(mppi['TimedObstacleCritic'],{'enabled':True,'cost_weight':1000.0,'clearance_m':.75})
         self.assertEqual(mppi['plugin'],'nav2_rotation_shim_controller::RotationShimController')
         self.assertEqual(mppi['primary_controller'],'nav2_mppi_controller::MPPIController')
-        self.assertTrue(mppi['rotate_to_goal_heading'])
+        self.assertFalse(mppi['rotate_to_goal_heading'])
         self.assertTrue(mppi['rotate_to_heading_once'])
         self.assertEqual(mppi['rotate_to_heading_angular_vel'],dwb['max_vel_theta'])
         self.assertEqual(mppi['max_angular_accel'],dwb['acc_lim_theta'])
@@ -216,12 +347,13 @@ class GeometryTests(unittest.TestCase):
         self.assertEqual(controller['FollowPath']['xy_goal_tolerance'],controller['goal_checker']['xy_goal_tolerance'])
         self.assertGreaterEqual(controller['FollowPath']['min_vel_x'],params['velocity_smoother']['ros__parameters']['min_velocity'][0])
         self.assertLessEqual(controller['FollowPath']['max_vel_theta'],params['velocity_smoother']['ros__parameters']['max_velocity'][2])
-        zone=params['collision_monitor']['ros__parameters']['SlowCircle']
-        self.assertEqual(zone['action_type'],'limit')
-        self.assertGreaterEqual(zone['angular_limit'],controller['FollowPath']['max_vel_theta'])
-        self.assertLess(zone['linear_limit'],controller['FollowPath']['max_vel_x'])
-        side_returns=np.asarray([[0.,-.55],[.02,-.55],[-.02,-.55],[.04,-.55]])
-        self.assertGreaterEqual(np.count_nonzero(np.linalg.norm(side_returns,axis=1)<zone['radius']),zone['min_points'])
+        monitor=params['collision_monitor']['ros__parameters']
+        self.assertEqual(monitor['polygons'],['FootprintApproach'])
+        approach=monitor['FootprintApproach']
+        self.assertEqual(approach['action_type'],'approach')
+        self.assertEqual(approach['footprint_topic'],'/local_costmap/published_footprint')
+        self.assertGreaterEqual(approach['time_before_collision'],2.)
+        self.assertIn('scan',monitor['observation_sources'])
         tree=ast.parse((SCRIPTS/'run_nav2_goal.py').read_text())
         assignment=next(item for item in tree.body if isinstance(item,ast.Assign) and
                         isinstance(item.targets[0],ast.Name) and item.targets[0].id=='goal_heading')
@@ -584,8 +716,10 @@ class GeometryTests(unittest.TestCase):
             write_provenance(output,[world],{'timeout':150})
             verify_provenance(output)
             runtime=json.loads((output/'run-provenance.json').read_text())['runtime_hashes']
-            mppi=Path('/opt/ros/jazzy/lib/libmppi_controller.so')
-            if mppi.is_file():
+            for filename in ('libmppi_controller.so','libnav2_smac_planner_2d.so',
+                             'librmw_cyclonedds_cpp.so'):
+                mppi=Path('/opt/ros/jazzy/lib')/filename
+                if not mppi.is_file():continue
                 self.assertIn(str(mppi),runtime)
                 identity=json.loads((output/'run-provenance.json').read_text())
                 identity['runtime_hashes'][str(mppi)]='0'*64

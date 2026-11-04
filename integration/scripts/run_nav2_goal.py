@@ -59,7 +59,8 @@ static_prediction_enabled=False;timed_prediction_enabled=False
 if args.nav2_params_file:
  nav_parameters=yaml.safe_load(args.nav2_params_file.read_text())
  local_parameters=nav_parameters['local_costmap']['local_costmap']['ros__parameters']
- static_prediction_enabled='motion_prediction' in local_parameters['plugins'] and local_parameters.get('motion_prediction',{}).get('enabled',True)
+ global_parameters=nav_parameters['global_costmap']['global_costmap']['ros__parameters']
+ static_prediction_enabled=any('motion_prediction' in parameters['plugins'] and parameters.get('motion_prediction',{}).get('enabled',True) for parameters in (local_parameters,global_parameters))
  follow_path=nav_parameters['controller_server']['ros__parameters']['FollowPath']
  timed_prediction_enabled='TimedObstacleCritic' in follow_path.get('critics',[]) and follow_path.get('TimedObstacleCritic',{}).get('enabled',True)
 prediction_enabled=static_prediction_enabled or timed_prediction_enabled
@@ -171,6 +172,11 @@ mission_end=navigator.get_clock().now().nanoseconds*1e-9
 wall_elapsed=time.monotonic()-start;elapsed=(mission_end-sim_start) if sim_start is not None else wall_elapsed
 # AMCL normally emits only after motion; obtain a real fresh terminal observation.
 if result==TaskResult.SUCCEEDED and not timed_out and not input_failure:navigator.refreshLocalization(amcl,gt)
+# Drain delayed benchmark observations against the frozen mission end, without extending navigation.
+observation_deadline=time.monotonic()+2.
+while obstacle_count and time.monotonic()<observation_deadline and not all(
+ obstacle_stamps.get(index,-math.inf)>=mission_end for index in range(obstacle_count)):
+ rclpy.spin_once(navigator,timeout_sec=.05)
 summary={'result':'PROCESS_FAILURE' if input_failure else ('TIMEOUT' if timed_out else names.get(result,str(result))),'elapsed_s':elapsed,'wall_elapsed_s':wall_elapsed,'goal_xy_m':[args.x,args.y],'navigation_waypoint_count':len(goals),'gt_samples':len(gt),'localization_success':False,'amcl_message_received':bool(amcl),'input_failure':input_failure,'nav2_activation_latency_s':activation_latency,'amcl_samples':len(amcl),'dynamic_obstacle_samples':len(dynamic),'scoring_schema':2,'navigation_timeout_s':args.timeout}
 for topic,samples in commands.items():
  if samples:

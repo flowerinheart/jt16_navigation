@@ -14,3 +14,11 @@ __pycache__/
 /integration/models/
 /integration/worlds/
 /integration/benchmarks/generated/
+
+/docs/v1/assets/arena-replay.mp4
+/docs/v1/assets/navigation-comparison.png
+/docs/v1/assets/mapping-comparison.png
+/docs/v1/assets/replay-poster.png
+
+/demos/**/*.mp4
+/demos/**/*.png

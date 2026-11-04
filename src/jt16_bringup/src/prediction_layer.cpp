@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include "nav2_costmap_2d/inflation_layer.hpp"
 #include "pluginlib/class_list_macros.hpp"
+#include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
 
 namespace jt16_bringup
 {
@@ -37,8 +38,7 @@ void PredictionLayer::receive(const sensor_msgs::msg::PointCloud2 & message)
   std::lock_guard<std::mutex> lock(mutex_);
   valid_ = false;
   points_.clear();
-  if (message.header.frame_id != layered_costmap_->getGlobalFrameID() ||
-    message.header.stamp.sec < 0 || !validLayout(message))
+  if (message.header.frame_id.empty() || message.header.stamp.sec < 0 || !validLayout(message))
   {
     RCLCPP_ERROR_THROTTLE(logger_, *clock_, 2000, "Invalid prediction cloud layout/frame");
     return;
@@ -58,8 +58,30 @@ void PredictionLayer::receive(const sensor_msgs::msg::PointCloud2 & message)
     if (!std::isfinite(x) || !std::isfinite(y)) {points_.clear(); return;}
     points_.emplace_back(x, y);
   }
+  if (!transformPoints(message)) {points_.clear(); return;}
   stamp_ = rclcpp::Time(message.header.stamp, clock_->get_clock_type());
   valid_ = true;
+}
+
+bool PredictionLayer::transformPoints(const sensor_msgs::msg::PointCloud2 & message)
+{
+  if (message.header.frame_id == layered_costmap_->getGlobalFrameID()) {return true;}
+  if (!tf_) {return false;}
+  try {
+    const auto transform = tf_->lookupTransform(
+      layered_costmap_->getGlobalFrameID(), message.header.frame_id,
+      rclcpp::Time(message.header.stamp));
+    tf2::Transform frame;
+    tf2::fromMsg(transform.transform, frame);
+    for (auto & point : points_) {
+      const auto translated = frame * tf2::Vector3(point.first, point.second, 0.0);
+      point = {translated.x(), translated.y()};
+    }
+  } catch (const tf2::TransformException & error) {
+    RCLCPP_WARN_THROTTLE(logger_, *clock_, 2000, "Prediction transform failed: %s", error.what());
+    return false;
+  }
+  return true;
 }
 
 bool PredictionLayer::fresh() const
@@ -83,7 +105,7 @@ void PredictionLayer::updateBounds(
   std::lock_guard<std::mutex> lock(mutex_);
   current_ = !enabled_ || fresh();
   auto * map = layered_costmap_->getCostmap();
-  // Recompose the small local window so old forecasts cannot become permanent obstacles.
+  // Recompose the window so old forecasts cannot become permanent obstacles.
   *min_x = std::min(*min_x, map->getOriginX());
   *min_y = std::min(*min_y, map->getOriginY());
   *max_x = std::max(*max_x, map->getOriginX() + map->getSizeInCellsX() * map->getResolution());
@@ -111,7 +133,9 @@ void PredictionLayer::updateCosts(
         if (distance > radius) {continue;}
         // Forecasts are uncertain future occupancy, not a hard collision at every time.
         const auto cost = std::min<unsigned char>(252, inflation->computeCost(distance));
-        master.setCost(col, row, std::max(master.getCost(col, row), cost));
+        const auto old = master.getCost(col, row);
+        master.setCost(col, row, old == nav2_costmap_2d::NO_INFORMATION ?
+          cost : std::max(old, cost));
       }
     }
   }

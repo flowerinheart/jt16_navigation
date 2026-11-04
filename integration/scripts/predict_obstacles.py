@@ -10,7 +10,7 @@ from rclpy.qos import qos_profile_sensor_data
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan, PointCloud2, PointField
 from sensor_msgs_py import point_cloud2
-from motion_prediction import MotionPredictor, scan_clusters
+from motion_prediction import MotionPredictor, scan_clusters, pose_at_stamp
 
 
 class ObstaclePredictor(Node):
@@ -45,8 +45,8 @@ class ObstaclePredictor(Node):
             return
         message = self.pending
         stamp = message.header.stamp.sec+message.header.stamp.nanosec*1e-9
-        pose_stamp,pose = min(self.poses,key=lambda row:abs(row[0]-stamp))
-        if abs(pose_stamp-stamp)>.03:
+        pose = pose_at_stamp(self.poses, stamp)
+        if pose is None:
             return
         self.pending = None
         try:

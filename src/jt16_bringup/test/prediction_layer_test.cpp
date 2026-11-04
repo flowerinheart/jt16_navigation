@@ -1,4 +1,5 @@
 #include <chrono>
+#include <cmath>
 #include <cstring>
 #include <limits>
 #include <thread>
@@ -6,6 +7,7 @@
 #include "jt16_bringup/prediction_layer.hpp"
 #include "nav2_util/lifecycle_node.hpp"
 #include "nav2_costmap_2d/inflation_layer.hpp"
+#include "tf2_ros/buffer.h"
 
 class PredictionLayerTest : public ::testing::Test
 {
@@ -15,11 +17,12 @@ protected:
     rclcpp::init(0, nullptr);
     executor = std::make_unique<rclcpp::executors::SingleThreadedExecutor>();
     node = std::make_shared<nav2_util::LifecycleNode>("prediction_layer_test");
+    buffer = std::make_shared<tf2_ros::Buffer>(node->get_clock());
     input = std::make_shared<rclcpp::Node>("prediction_input_test");
     parent = std::make_unique<nav2_costmap_2d::LayeredCostmap>("odom", false, false);
     parent->resizeMap(40, 40, .1, -2., -2.);
     layer = std::make_shared<jt16_bringup::PredictionLayer>();
-    layer->initialize(parent.get(), "prediction", nullptr, node,
+    layer->initialize(parent.get(), "prediction", buffer.get(), node,
       node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive));
     parent->addPlugin(layer);
     auto inflation = std::make_shared<nav2_costmap_2d::InflationLayer>();
@@ -68,10 +71,44 @@ protected:
   std::unique_ptr<rclcpp::executors::SingleThreadedExecutor> executor;
   std::shared_ptr<nav2_util::LifecycleNode> node;
   std::shared_ptr<rclcpp::Node> input;
+  std::shared_ptr<tf2_ros::Buffer> buffer;
   std::unique_ptr<nav2_costmap_2d::LayeredCostmap> parent;
   std::shared_ptr<jt16_bringup::PredictionLayer> layer;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher;
 };
+
+TEST_F(PredictionLayerTest, ForecastsTransformIntoTheCostmapFrame)
+{
+  geometry_msgs::msg::TransformStamped transform;
+  transform.header.frame_id = "odom";
+  transform.child_frame_id = "map";
+  transform.transform.translation.x = 2.0;
+  transform.transform.rotation.z = std::sqrt(0.5);
+  transform.transform.rotation.w = std::sqrt(0.5);
+  ASSERT_TRUE(buffer->setTransform(transform, "test", true));
+  auto message = cloud();
+  message.header.frame_id = "map";
+  const float xyz[3] = {0.f, 1.f, 0.f};
+  std::memcpy(message.data.data(), xyz, 12);
+  ASSERT_TRUE(deliver(message, true, 252));
+  EXPECT_EQ(parent->getCostmap()->getCost(20, 30), nav2_costmap_2d::FREE_SPACE);
+}
+
+TEST_F(PredictionLayerTest, ForecastsCoverUnknownCellsAndExpireWithoutErasingLethalCosts)
+{
+  auto * map = parent->getCostmap();
+  map->setDefaultValue(nav2_costmap_2d::NO_INFORMATION);
+  map->resetMap(0, 0, 40, 40);
+  ASSERT_TRUE(deliver(cloud(), true, 252));
+  EXPECT_EQ(map->getCost(0, 0), nav2_costmap_2d::NO_INFORMATION);
+  map->setCost(30, 20, nav2_costmap_2d::LETHAL_OBSTACLE);
+  layer->updateCosts(*map, 0, 0, 40, 40);
+  EXPECT_EQ(map->getCost(30, 20), nav2_costmap_2d::LETHAL_OBSTACLE);
+  std::this_thread::sleep_for(std::chrono::milliseconds(550));
+  parent->updateMap(0., 0., 0.);
+  EXPECT_FALSE(layer->isCurrent());
+  EXPECT_EQ(map->getCost(30, 20), nav2_costmap_2d::NO_INFORMATION);
+}
 
 TEST_F(PredictionLayerTest, ForecastsClearWithoutErasingRealCostsAndRejectInvalidInput)
 {
