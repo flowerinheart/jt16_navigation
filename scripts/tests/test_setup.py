@@ -36,6 +36,7 @@ class SetupTests(unittest.TestCase):
             (root/'scripts').mkdir(parents=True)
             (root/'config/setup').mkdir(parents=True)
             shutil.copyfile(ROOT/'scripts/setup.sh', root/'scripts/setup.sh')
+            shutil.copyfile(ROOT/'scripts/configure_ros_network.sh', root/'scripts/configure_ros_network.sh')
             shutil.copyfile(ROOT/'config/setup/image.env', root/'config/setup/image.env')
             docker = Path(directory)/'docker'
             docker.write_text('#!/usr/bin/python3\nimport sys,json\nprint(json.dumps(sys.argv[1:]))\n')
@@ -43,7 +44,10 @@ class SetupTests(unittest.TestCase):
             env = {**os.environ, 'PATH':directory+':'+os.environ['PATH'], 'SETUP_VOLUME':'jt16-test-isolation'}
             output = subprocess.check_output(['bash', str(root/'scripts/setup.sh'), 'runtime', 'cpu'], env=env, text=True)
             commands = [json.loads(line) for line in output.splitlines() if line.startswith('[')]
-            run = next(c for c in commands if c[0]=='run')
+            network = next(c for c in commands if '--cap-add' in c)
+            self.assertEqual(network[network.index('--cap-add') + 1], 'NET_ADMIN')
+            self.assertNotIn('--privileged', network)
+            run = next(c for c in commands if c[0]=='run' and '--cap-add' not in c)
             self.assertIn('type=volume,src=jt16-test-isolation,dst=/workspace', run)
             self.assertIn(f'type=bind,src={root},dst=/source,readonly', run)
             self.assertNotIn('--privileged', run)
@@ -51,7 +55,7 @@ class SetupTests(unittest.TestCase):
             self.assertIn('setup_container.sh', ' '.join(run))
             output = subprocess.check_output(['bash', str(root/'scripts/setup.sh'), 'runtime', 'cuda'], env=env, text=True)
             commands = [json.loads(line) for line in output.splitlines() if line.startswith('[')]
-            run = next(c for c in commands if c[0]=='run')
+            run = next(c for c in commands if c[0]=='run' and '--cap-add' not in c)
             self.assertIn('--runtime=nvidia', run)
             self.assertEqual(run[run.index('--gpus') + 1], 'all')
 

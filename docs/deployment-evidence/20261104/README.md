@@ -33,3 +33,5 @@ Thor依赖镜像：`jt16-deps:jazzy-runtime-aarch64`，ID `sha256:1e715d666cd606
 本机Tailscale用户服务已登录，现有Aliyun Shanghai DERP（47.117.137.138:443）已连接，探测延迟约11ms。本机使用已有AMD企业CA验证网络网关证书；SSH经本机SOCKS5端口1055进入Tailnet，Thor当前优先使用点对点连接。
 
 FAST-LIO、AMCL、MPPI和Hesai主链路仍使用CPU；GPU检查验证运行库初始化与设备访问。未验证真实传感器、机器人运动或GPU算法加速；V1历史性能评测保持暂停。
+
+后续Thor实际传感器、建图与导航样例验证及发现的网络配置问题见[仿真验证记录](thor-simulation/README.md)。

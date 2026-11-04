@@ -1,0 +1,8 @@
+{
+  "result": "PROCESS_FAILURE",
+  "scored_success": false,
+  "nav2_action_success": false,
+  "localization_success": false,
+  "activation_error": "bt_navigator did not become active",
+  "localization_initialization_latency_s": 59.965600793715566
+}

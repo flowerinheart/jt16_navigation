@@ -29,6 +29,7 @@ docker build --network host --build-arg HTTP_PROXY --build-arg HTTPS_PROXY --bui
   --build-arg "BASE_IMAGE=$BASE_IMAGE" --build-arg "PROFILE=$PROFILE" \
   -f "$ROOT/docker/Dockerfile" -t "$IMAGE" "$ROOT" 2>&1 | tee "$ROOT/.setup/image-$PROFILE.log"
 docker image inspect "$IMAGE" --format '{{.Id}}' > "$ROOT/.setup/image-$PROFILE.id"
+bash "$ROOT/scripts/configure_ros_network.sh" "$IMAGE"
 docker run --rm --network host "${GPU_ARGS[@]}" \
   --mount "type=bind,src=$ROOT,dst=/source,readonly" --mount "type=volume,src=$VOLUME,dst=/workspace" \
   -e "BUILD_JOBS=$JOBS" -e HTTP_PROXY -e HTTPS_PROXY -e NO_PROXY \

@@ -24,6 +24,8 @@ bash scripts/deploy_ssh.sh nvidia@100.101.39.17 runtime cuda
 
 `setup.sh` 构建可复用依赖镜像，将源码复制到独立 Docker 工作卷，调用现有 `fetch_dependencies.sh`、`check_dependencies.py`、`build.sh`，然后运行 Python/C++ 回归与 ROS 节点接口检查。宿主机的 `external/`、build/install、历史结果、仿真资源和评测进程保持隔离。
 
+构建镜像后，`configure_ros_network.sh`将宿主机UDP收发缓冲上限至少设为4 MiB，并写入`/etc/sysctl.d/90-jt16-network.conf`持久化；已有更大值保留。这个一次性配置容器只增加`NET_ADMIN`并挂载对应sysctl目录，运行与评测容器不增加该权限。Ubuntu默认约208 KiB不足以稳定接收约600 KiB点云的DDS分片，实测会造成滚动点云停更及导航激活失败。
+
 两种配置都运行配置测试、动态预测测试、C++插件测试与已安装ROS节点接口检查；benchmark再运行完整66项集成回归，其中地图/评测编排用例需要Pillow和jq。
 
 本地日志在 `.setup/`。工作卷内 `/workspace/jt16/deployment-evidence/` 保存系统包版本、源码清单哈希、架构、ROS 包路径和 GPU 枚举结果。`SETUP_VOLUME` 可指定全新工作卷；`BUILD_JOBS` 默认2，限制编译内存占用。
@@ -77,3 +79,5 @@ Thor 上直接构建 arm64，不运行 amd64 镜像模拟。NVIDIA 驱动、JetP
 历史 V1 性能评测仍暂停；部署验证与性能验收分别记录。
 
 2026-11-04本机ROCm、Thor ARM64/CUDA及可选benchmark配置验证结果见[部署验证记录](deployment-evidence/20261104/README.md)。
+
+Thor实际仿真样例、UDP缓冲修复前后结果见[仿真验证记录](deployment-evidence/20261104/thor-simulation/README.md)。
