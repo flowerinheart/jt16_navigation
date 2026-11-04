@@ -1,0 +1,13 @@
+repositories:
+  external/reference/XLeRobot:
+    type: git
+    url: https://github.com/Vector-Wangel/XLeRobot.git
+    version: b017b5e6354bd9f61f4247a920c72622ca0aade0
+  external/benchmarks/the-barn-challenge:
+    type: git
+    url: https://github.com/Daffan/the-barn-challenge.git
+    version: bf5a226f6088ec96bf0d2dbee3253a8ea6119b83
+  external/benchmarks/arena-bench:
+    type: git
+    url: https://github.com/ignc-research/arena-bench.git
+    version: 519640415718abc7603ff38bc80b2bd22c38b13c

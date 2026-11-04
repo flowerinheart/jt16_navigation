@@ -1,5 +1,8 @@
 # JT16 Navigation
 
+From a clean Ubuntu 24.04 container: `bash scripts/setup.sh`.
+See [deployment and dependency profiles](docs/deployment.md) for ROCm, CUDA/Thor and optional benchmark setup.
+
 XLeRobot + Hesai JT16 mapping, AMCL localization and Nav2 navigation on ROS 2 Jazzy / Gazebo Harmonic.
 
 V1 candidate G passed all **16/16 development cases**, **10/10 fresh BARN maps**, and **6/6 required repeats**, with zero collisions or input/process failures. Its frozen full benchmark is paused by user: 30/30 valid maps, BARN 144/150 strict successes, Arena 10/10 collected strict successes, zero collisions and one navigation PROCESS_FAILURE. Fifty Arena results and supplemental TIMEOUT reruns remain pending. V1 performance acceptance remains pending. Earlier candidates and every failed run remain preserved.

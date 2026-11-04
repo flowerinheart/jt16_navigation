@@ -1,0 +1,8 @@
+*
+!docker/
+!docker/**
+!config/
+!config/setup/
+!config/setup/**
+!scripts/
+!scripts/install_dependencies.sh

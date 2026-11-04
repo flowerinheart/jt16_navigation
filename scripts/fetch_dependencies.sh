@@ -3,7 +3,7 @@ set -euo pipefail
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
 cd "$ROOT"
 role=${1:-runtime}
-case "$role" in runtime|reference|templates) ;; *) echo "usage: $0 runtime|reference|templates" >&2; exit 2;; esac
+case "$role" in deploy|benchmark|runtime|reference|templates) ;; *) echo "usage: $0 deploy|benchmark|runtime|reference|templates" >&2; exit 2;; esac
 vcs import --recursive . < "dependencies.$role.repos"
 # Initialize declared repositories without relying on non-existent `vcs list`.
 while IFS= read -r repo; do

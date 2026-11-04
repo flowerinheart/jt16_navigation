@@ -1,0 +1,13 @@
+repositories:
+  external/runtime/navigation2:
+    type: git
+    url: https://github.com/ros-navigation/navigation2.git
+    version: 6be3614013ec586051b86c97b919b293281490fe
+  external/runtime/FAST_LIO_Hesai:
+    type: git
+    url: https://github.com/HesaiTechnology-Spatial-Perception/FAST_LIO_Hesai.git
+    version: 2783882405484c0c852eaffc3b07b26d1fff2556
+  external/runtime/HesaiLidar_ROS_2.0:
+    type: git
+    url: https://github.com/HesaiTechnology/HesaiLidar_ROS_2.0.git
+    version: 3d54078a3d770004ef30ec2cacc26673f4172b22
