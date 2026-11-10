@@ -49,3 +49,20 @@ V1 candidate G 来源：`integration/results/v1/full-benchmark-20261104-g/`。�
 在仓库根目录执行 `/usr/bin/python3 demos/render_samples.py`。复用现有绘图与坐标转换工具，读取保存记录，不运行导航，不覆盖原始评测数据。生成六张地图、六个 MP4、六张视频末帧及来源清单；脚本检查成功分类、有限坐标、H.264 编码和播放时长。
 
 [samples.json](samples.json) 记录每项原始结果与文件 SHA256。[validation.json](validation.json) 记录 12 项来源和输出哈希、执行归档输入、六个完整视频解码及末帧校验通过。生成媒体保留本地，源码、说明和清单可单独版本管理。
+
+## 第一人称 3D 双视角回放
+
+`-first-person.mp4` 同时显示左侧俯视轨迹和右侧第一人称透视图，时间同步、8 倍速。右图从原始场景 SDF/world 中的墙体、圆柱尺寸及世界坐标 GT 重建，移动圆柱使用同一时刻的障碍记录。虚拟相机水平朝向机器人前方，高度 0.38 m、水平视场 90°；这是可视化相机，不代表硬件 RGB 相机标定。保留原始 2D 视频和评测记录。
+
+渲染使用 NumPy CPU 光线与立体几何求交，包含地面、遮挡和距离明暗；不启动 Gazebo，不需要 GPU。支持当前基准的直立盒体和圆柱，不还原 Gazebo 的光照、阴影、机器人网格或纹理。缺失动态观测仍隐藏，不补造运动。
+
+```sh
+python demos/first_person.py  # 摄像机朝向与遮挡自检
+python demos/render_samples.py --case arena6/map5_obs10/seed_00 --first-person
+```
+
+依赖沿用现有报告渲染环境（NumPy、Matplotlib、Markdown、FFmpeg）。四个选定成功案例的双视角视频及来源/场景哈希见 [selected-first-person-20261109.json](selected-first-person-20261109.json)。
+
+## 输出目录
+
+渲染代码保留在仓库；媒体、来源索引和校验清单默认写到 `~/.jt16-navigation/demos/`，可通过 `JT16_DATA_HOME` 改根目录。原始批次从 evaluations 读取。本文旧相对链接在本机通过忽略的兼容链接可读，Git clone 不包含这些媒体；目录规则见 [artifact-storage.md](../docs/artifact-storage.md)。

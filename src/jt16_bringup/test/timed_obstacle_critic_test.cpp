@@ -29,7 +29,7 @@ protected:
     critic = loader->createSharedInstance("mppi::critics::TimedObstacleCritic");
     critic->on_configure(node, "FollowPath", "FollowPath.TimedObstacleCritic", costmap, parameters.get());
     input = std::make_shared<rclcpp::Node>("timed_critic_input");
-    publisher = input->create_publisher<sensor_msgs::msg::PointCloud2>("/moving_obstacle_points", 1);
+    publisher = input->create_publisher<sensor_msgs::msg::PointCloud2>("/forecast_surface_points", 1);
     trajectories.reset(2, 30);
     costs = xt::zeros<float>({2});
     data = std::make_unique<mppi::CriticData>(mppi::CriticData{
@@ -104,7 +104,40 @@ TEST_F(TimedCriticTest, PassBeforeArrivalIsSafeButWaitingForLateralArrivalIsNot)
   send(cloud());
   ASSERT_FALSE(data->fail_flag);
   EXPECT_NEAR(costs(0), 0.0f, 1e-6);
-  EXPECT_GT(costs(1), 50.0f);
+  EXPECT_GE(costs(1), 1000000.0f);
+}
+
+TEST_F(TimedCriticTest, FarClutterPreservesCostsAndApproachingSurfacesRemainRelevant)
+{
+  auto m = cloud();
+  send(m);
+  const auto expected = costs;
+  m.width = 101; m.row_step = m.width * 16; m.data.resize(m.row_step);
+  for (size_t k = 1; k < m.width; ++k) {
+    const float point[4] = {20.f + float(k), -20.f - float(k),
+      k % 2 ? 0.f : -1.f, 0.f};
+    std::memcpy(m.data.data() + 16 * k, point, 16);
+  }
+  send(m);
+  EXPECT_FALSE(data->fail_flag);
+  EXPECT_FLOAT_EQ(costs(0), expected(0));
+  EXPECT_FLOAT_EQ(costs(1), expected(1));
+  m = cloud();
+  const float entering[4] = {10.f, 0.f, -1.2f, 0.f};
+  std::memcpy(m.data.data(), entering, 16);
+  send(m);
+  EXPECT_FALSE(data->fail_flag);
+  EXPECT_GT(costs(0), 1.f);
+  EXPECT_FLOAT_EQ(costs(1), 0.f);
+}
+
+TEST_F(TimedCriticTest, AllPredictedCollisionsFailTheOptimizationBatch)
+{
+  trajectories.x.fill(1.0f);
+  send(cloud());
+  EXPECT_TRUE(data->fail_flag);
+  EXPECT_GE(costs(0), 1000000.0f);
+  EXPECT_GE(costs(1), 1000000.0f);
 }
 
 TEST_F(TimedCriticTest, EmptyCloudIsFreshAndOldOrInvalidCloudFails)
@@ -119,6 +152,8 @@ TEST_F(TimedCriticTest, EmptyCloudIsFreshAndOldOrInvalidCloudFails)
   m = cloud(); const float bad = std::numeric_limits<float>::quiet_NaN();
   std::memcpy(m.data.data(), &bad, 4);
   send(m); EXPECT_TRUE(data->fail_flag);
+  trajectories.reset(0, 30); costs = xt::zeros<float>({0});
+  send(cloud()); EXPECT_TRUE(data->fail_flag);
 }
 
 TEST_F(TimedCriticTest, TimestampOffsetAndRobotOrientationAreUsed)
@@ -144,10 +179,11 @@ TEST_F(TimedCriticTest, TimestampOffsetAndRobotOrientationAreUsed)
 TEST_F(TimedCriticTest, NearestSurfaceMatchesOriginalPerPointRisk)
 {
   trajectories.reset(2, 30);
+  for (size_t j = 0; j < 30; ++j) {trajectories.x(1, j) = 10.0f;}
   auto m = cloud();
   m.width = 32; m.row_step = 16 * m.width; m.data.resize(m.row_step);
   for (size_t k = 0; k < m.width; ++k) {
-    const float point[4] = {float(k) * .025f, .1f + float(k) * .012f, 0.f, 0.f};
+    const float point[4] = {float(k) * .025f, .1f + float(k) * .012f, .08f, 0.f};
     std::memcpy(m.data.data() + 16 * k, point, 16);
   }
   double peak = 0., total = 0.;
@@ -162,7 +198,7 @@ TEST_F(TimedCriticTest, NearestSurfaceMatchesOriginalPerPointRisk)
     double worst = 0.;
     for (size_t k = 0; k < m.width; ++k) {
       float p[4]; std::memcpy(p, m.data.data() + 16 * k, 16);
-      const double dx = p[0] - x, dy = p[1] - y;
+      const double dx = p[0] + p[2] * ((j + 1) * dt) - x, dy = p[1] - y;
       const double bx = std::cos(yaw) * dx + std::sin(yaw) * dy;
       const double by = -std::sin(yaw) * dx + std::cos(yaw) * dy;
       const double gap = std::hypot(std::max(std::abs(bx) - half_x, 0.),
@@ -174,5 +210,79 @@ TEST_F(TimedCriticTest, NearestSurfaceMatchesOriginalPerPointRisk)
   }
   send(m);
   ASSERT_FALSE(data->fail_flag);
-  EXPECT_NEAR(costs(0), 100. * (.5 * peak + total / 30), 1e-4);
+  const float expected = 100. * (.5 * peak + total / 30) + (peak == 1. ? 1000000. : 0.);
+  EXPECT_FLOAT_EQ(costs(0), expected);
+}
+
+TEST_F(TimedCriticTest, UnresolvedMotionCostsProximityWithoutDeclaringExactCollision)
+{
+  trajectories.x.fill(0.f);
+  for (size_t j = 0; j < 30; ++j) {trajectories.y(0, j) = -1.f;}
+  auto m = cloud();
+  const float unknown[4] = {0.f, .7f, 0.f, 0.f};
+  std::memcpy(m.data.data(), unknown, 16);
+  send(m);
+  EXPECT_FALSE(data->fail_flag);
+  EXPECT_NEAR(costs(0), 0.f, 1e-6);
+  EXPECT_GT(costs(1), 0.f);
+  EXPECT_LE(costs(1), 150.f);
+  trajectories.y.fill(0.f);
+  send(m);
+  EXPECT_FALSE(data->fail_flag);
+  EXPECT_GT(costs(0), 0.f); EXPECT_LE(costs(0), 150.f);
+  EXPECT_GT(costs(1), 0.f); EXPECT_LE(costs(1), 150.f);
+  const float known[4] = {0.f, .7f, 0.f, .08f};
+  std::memcpy(m.data.data(), known, 16);
+  send(m);
+  EXPECT_FALSE(data->fail_flag);
+  EXPECT_NEAR(costs(1), 0.f, 1e-6);
+  m.width = 2; m.row_step = 32; m.data.resize(32);
+  const float partial[4] = {0.f, .72f, 0.f, 0.f};
+  std::memcpy(m.data.data() + 16, partial, 16);
+  send(m);
+  EXPECT_FALSE(data->fail_flag);
+  EXPECT_GT(costs(1), 0.f); EXPECT_LE(costs(1), 150.f);
+  m.width = 1; m.row_step = 16; m.data.resize(16);
+  trajectories.y.fill(0.f);
+  const float inside[4] = {0.f, 0.f, 0.f, 0.f};
+  std::memcpy(m.data.data(), inside, 16);
+  send(m);
+  EXPECT_TRUE(data->fail_flag);
+  EXPECT_GE(costs(0), 1000000.f);
+  EXPECT_GE(costs(1), 1000000.f);
+}
+
+TEST_F(TimedCriticTest, ExactCollisionOutranksSaturatedUnresolvedProximity)
+{
+  trajectories.x.fill(0.f);
+  for (size_t j = 0; j < 30; ++j) {trajectories.x(1, j) = 5.f;}
+  auto m = cloud();
+  m.width = 2; m.row_step = 32; m.data.resize(32);
+  const float points[8] = {0.f, .7f, 0.f, 0.f, 5.f, 0.f, .08f, 0.f};
+  std::memcpy(m.data.data(), points, 32);
+  send(m);
+  EXPECT_FALSE(data->fail_flag);
+  EXPECT_GT(costs(0), 0.f); EXPECT_LE(costs(0), 150.f);
+  EXPECT_GE(costs(1), 1000000.f);
+  EXPECT_GT(costs(1), costs(0));
+}
+
+TEST_F(TimedCriticTest, SaturatedUnresolvedRiskStillFindsLaterExactCollision)
+{
+  trajectories.reset(2,2);dt=.6f;
+  auto m=cloud();
+  const float unknown[4]={.7f,0.f,0.f,0.f};
+  std::memcpy(m.data.data(),unknown,16);
+  send(m);
+  EXPECT_FALSE(data->fail_flag);EXPECT_LE(costs(0),150.f);
+  m.width=2;m.row_step=32;m.data.resize(32);
+  const float exact[4]={-.096f,0.f,.08f,0.f};
+  std::memcpy(m.data.data()+16,exact,16);
+  send(m);
+  EXPECT_TRUE(data->fail_flag);EXPECT_GE(costs(0),1000000.f);
+  const auto expected=costs;
+  std::memcpy(m.data.data(),exact,16);std::memcpy(m.data.data()+16,unknown,16);
+  send(m);
+  EXPECT_TRUE(data->fail_flag);
+  EXPECT_FLOAT_EQ(costs(0),expected(0));EXPECT_FLOAT_EQ(costs(1),expected(1));
 }

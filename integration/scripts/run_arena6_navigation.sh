@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
-TASK_ROOT=$(cd "$(dirname "$0")/.."&&pwd);RESULTS=${1:-"$TASK_ROOT/results/v0/arena6"};JOBS=${JOBS:-2};QUEUE=$(mktemp /tmp/jt16-arena-queue.XXXXXX);trap 'rm -f "$QUEUE"' EXIT
+TASK_ROOT=$(cd "$(dirname "$0")/.."&&pwd)
+RESULTS_ROOT=$(/usr/bin/python3 "$TASK_ROOT/scripts/artifact_paths.py" evaluations)
+RESULTS=${1:-"$RESULTS_ROOT/v0/arena6"};JOBS=${JOBS:-2};QUEUE=$(mktemp /tmp/jt16-arena-queue.XXXXXX);trap 'rm -f "$QUEUE"' EXIT
 jq -r '.entries[]|.world as $w|.obstacle_count as $o|.navigation_seeds[]|[$w,$o,.]|@tsv' "$TASK_ROOT/benchmarks/manifests/arena6.json">"$QUEUE";export TASK_ROOT RESULTS
 /usr/bin/python3 "$TASK_ROOT/scripts/build_robot.py"
 gz sdf -p "$TASK_ROOT/models/xlerobot_jt16.urdf" > "$TASK_ROOT/models/xlerobot_jt16.sdf"

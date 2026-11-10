@@ -32,10 +32,11 @@ docker image inspect "$IMAGE" --format '{{.Id}}' > "$ROOT/.setup/image-$PROFILE.
 bash "$ROOT/scripts/configure_ros_network.sh" "$IMAGE"
 docker run --rm --network host "${GPU_ARGS[@]}" \
   --mount "type=bind,src=$ROOT,dst=/source,readonly" --mount "type=volume,src=$VOLUME,dst=/workspace" \
+  -e JT16_DATA_HOME=/workspace/.jt16-navigation \
   -e "BUILD_JOBS=$JOBS" -e HTTP_PROXY -e HTTPS_PROXY -e NO_PROXY \
   -e "ROS_DOMAIN_ID=${SETUP_ROS_DOMAIN_ID:-197}" -e RMW_IMPLEMENTATION=rmw_cyclonedds_cpp \
   -e "ROS_AUTOMATIC_DISCOVERY_RANGE=${ROS_AUTOMATIC_DISCOVERY_RANGE:-LOCALHOST}" \
   "$IMAGE" bash /source/scripts/setup_container.sh "$PROFILE" "$BACKEND" \
   2>&1 | tee "$ROOT/.setup/build-$PROFILE-$BACKEND.log"
 echo "Setup passed. Workspace volume: $VOLUME; image: $IMAGE"
-echo "Open: docker run --rm -it --network host -v $VOLUME:/workspace $IMAGE bash"
+echo "Open: docker run --rm -it --network host -v $VOLUME:/workspace -e JT16_DATA_HOME=/workspace/.jt16-navigation $IMAGE bash"

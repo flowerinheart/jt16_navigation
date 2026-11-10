@@ -34,3 +34,11 @@ def self_returns(xyz, mount):
     rotation = np.array([[c, 0, s], [0, 1, 0], [-s, 0, c]])
     base = xyz @ rotation.T + mount['position_m']
     return inside_self(base, mount['self_filter_min_m'], mount['self_filter_max_m'])
+
+
+def map_points_with_base_height(xyz, position, quaternion, mount):
+    """Return map x/y and calibrated height above the robot's base plane."""
+    base = Rotation.from_euler('y', -mount['pitch_up_rad']).apply(xyz) + mount['position_m']
+    world = Rotation.from_quat(quaternion).apply(xyz) + position
+    world[:, 2] = base[:, 2]
+    return world

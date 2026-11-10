@@ -28,7 +28,7 @@ bash scripts/deploy_ssh.sh nvidia@100.101.39.17 runtime cuda
 
 两种配置都运行配置测试、动态预测测试、C++插件测试与已安装ROS节点接口检查；benchmark再运行完整66项集成回归，其中地图/评测编排用例需要Pillow和jq。
 
-本地日志在 `.setup/`。工作卷内 `/workspace/jt16/deployment-evidence/` 保存系统包版本、源码清单哈希、架构、ROS 包路径和 GPU 枚举结果。`SETUP_VOLUME` 可指定全新工作卷；`BUILD_JOBS` 默认2，限制编译内存占用。
+本地日志在 `.setup/`。工作卷内 `/workspace/.jt16-navigation/reports/evaluation/<批次>-deployment/` 保存系统包版本、源码清单哈希、架构、ROS 包路径和 GPU 枚举结果。`SETUP_VOLUME` 可指定全新工作卷；`BUILD_JOBS` 默认2，限制编译内存占用。
 
 构建验证默认使用ROS domain 197及`ROS_AUTOMATIC_DISCOVERY_RANGE=LOCALHOST`，避免与宿主机任务互相发现；实际跨机器ROS通信需配置对应domain和发现范围。
 
@@ -65,6 +65,8 @@ source /workspace/jt16/install/setup.bash
 官方 `nav2_bringup` APT包强制依赖TurtleBot仿真和Gazebo，因此默认配置从固定Nav2源码构建该配置包（关闭其lint测试），算法库继续使用APT；导航与定位launch可运行，TurtleBot仿真launch留给可选评测环境。
 
 基础 Ubuntu 镜像使用 digest，外部 Git 使用完整 commit，子模块跟随父仓库固定版本。APT 包按 Ubuntu/ROS 仓库解析，实际版本记录进依赖镜像；保存构建后的镜像可复用同一组系统依赖。该构建不使用本机 `integration/deps` 提取库兜底。
+
+FAST-LIO 特征预处理的空通道越界修复及当前 V1 运动表面过滤试验保存在 `patches/fast-lio.patch`。fetch 和 runtime build 自动幂等应用，依赖检查同时验证固定 commit 与补丁；补丁冲突时停止，不覆盖已有源码改动。
 
 ## ROCm 与 CUDA 的范围
 

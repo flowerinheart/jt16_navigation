@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstring>
 #include <stdexcept>
+#include <unordered_set>
 #include "nav2_costmap_2d/inflation_layer.hpp"
 #include "pluginlib/class_list_macros.hpp"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
@@ -26,6 +27,7 @@ void PredictionLayer::onInitialize()
   declareParameter("enabled", rclcpp::ParameterValue(true));
   node->get_parameter(name_ + ".enabled", enabled_);
   current_ = !enabled_;
+  if (!enabled_) {return;}
   rclcpp::SubscriptionOptions options;
   options.callback_group = callback_group_;
   subscription_ = node->create_subscription<sensor_msgs::msg::PointCloud2>(
@@ -103,7 +105,8 @@ void PredictionLayer::updateBounds(
   double, double, double, double * min_x, double * min_y, double * max_x, double * max_y)
 {
   std::lock_guard<std::mutex> lock(mutex_);
-  current_ = !enabled_ || fresh();
+  if (!enabled_) {return;}
+  current_ = fresh();
   auto * map = layered_costmap_->getCostmap();
   // Recompose the window so old forecasts cannot become permanent obstacles.
   *min_x = std::min(*min_x, map->getOriginX());
@@ -124,9 +127,11 @@ void PredictionLayer::updateCosts(
   }
   if (!inflation) {current_ = false; return;}
   const int radius = std::ceil(inflation->getInflationRadius() / master.getResolution());
+  std::unordered_set<unsigned int> visited_cells;
   for (const auto & point : points_) {
     unsigned int x, y;
     if (!master.worldToMap(point.first, point.second, x, y)) {continue;}
+    if (!visited_cells.insert(master.getIndex(x, y)).second) {continue;}
     for (int row = std::max(min_j, int(y) - radius); row < std::min(max_j, int(y) + radius + 1); ++row) {
       for (int col = std::max(min_i, int(x) - radius); col < std::min(max_i, int(x) + radius + 1); ++col) {
         const double distance = std::hypot(col - int(x), row - int(y));

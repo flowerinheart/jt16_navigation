@@ -3,6 +3,7 @@ set -euo pipefail
 PROFILE=${1:?profile required}
 BACKEND=${2:?backend required}
 ROOT=/workspace/jt16
+export JT16_DATA_HOME="${JT16_DATA_HOME:-/workspace/.jt16-navigation}"
 mkdir -p "$ROOT"
 # Keep the host's paused evaluation, vendored sources and build caches isolated.
 tar -C /source --exclude='./.git' --exclude='./external' --exclude='./build' --exclude='./install' \
@@ -10,9 +11,19 @@ tar -C /source --exclude='./.git' --exclude='./external' --exclude='./build' --e
   --exclude='./integration/deps' --exclude='./integration/archive' --exclude='./integration/build' \
   --exclude='./integration/install' --exclude='./integration/log' --exclude='./integration/models' \
   --exclude='./integration/worlds' --exclude='./integration/benchmarks/generated' \
-  --exclude='__pycache__' -cf - . | tar -C "$ROOT" -xf -
+  --exclude='./integration/diagnostics' --exclude='./docs/reviews' --exclude='./docs/v1/local' \
+  --exclude='./docs/v1/assets' --exclude='./docs/v0/assets' --exclude='./docs/v0/evidence.json' \
+  --exclude='./docs/v0/report.html' --exclude='./demos/v0' --exclude='./demos/v1-candidate-g' \
+  --exclude='./demos/*.json' --exclude='./demos/*.png' --exclude='./docs/v1/diagnosis-plan.md' \
+  --exclude='./docs/v1/progress.md' --exclude='./docs/v1/pause-checkpoint.md' \
+  --exclude='./docs/deployment-evidence/*.json' --exclude='./deployment-evidence' \
+  --exclude='./.aws' --exclude='./.codex/sessions' --exclude='./.codex/log' \
+  --exclude='./.codex/history.jsonl' --exclude='./.claude/projects' \
+  --exclude='./.claude_code/sessions' --exclude='./.cursor/workspaceStorage' \
+  --exclude='./.jt16-navigation' --exclude='__pycache__' -cf - . | tar -C "$ROOT" -xf -
 cd "$ROOT"
-mkdir -p deployment-evidence
+EVIDENCE=$(/usr/bin/python3 integration/scripts/artifact_paths.py reports --label deployment)
+mkdir -p "$EVIDENCE"
 set +u
 source /opt/ros/jazzy/setup.bash
 set -u
@@ -40,7 +51,7 @@ fi
 colcon test --executor sequential --base-paths src --packages-select jt16_bringup --event-handlers console_direct+
 colcon test-result --verbose
 /usr/bin/python3 integration/tests/ros_interface_smoke.py
-/usr/bin/python3 scripts/check_deployment.py "$PROFILE" "$BACKEND" > deployment-evidence/runtime.json
-cp /opt/jt16-setup/evidence/system-packages.tsv deployment-evidence/
-cp /opt/jt16-setup/evidence/ubuntu.sources deployment-evidence/
-echo "Runtime and installed-node checks passed: $ROOT/deployment-evidence"
+/usr/bin/python3 scripts/check_deployment.py "$PROFILE" "$BACKEND" > "$EVIDENCE/runtime.json"
+cp /opt/jt16-setup/evidence/system-packages.tsv "$EVIDENCE/"
+cp /opt/jt16-setup/evidence/ubuntu.sources "$EVIDENCE/"
+echo "Runtime and installed-node checks passed: $EVIDENCE"

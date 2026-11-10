@@ -1,6 +1,7 @@
 """Small fixed-data checks; no ROS, Gazebo, network or historical-result writes."""
 import importlib.util
 import ast
+from copy import deepcopy
 import hashlib
 import json
 import math
@@ -19,14 +20,112 @@ from benchmark_geometry import (base_pose, cpu_delta, dilate_occupied, covarianc
                                 dynamic_clearances, localization_metrics,
                                 nearest_time_index, shortest_path, static_collision, tf_valid,
                                 obstacle_observations_fresh, mapping_input_failure)
-from sensor_geometry import self_returns, pose_twist, sensor_position, world_specific_force
+from sensor_geometry import self_returns, pose_twist, sensor_position, world_specific_force, inside_self
 from navigation_metrics import score_navigation,motion_metrics,mission_trajectory
 from build_mppi_parameters import mppi_parameters
 from run_development_set import run_development_set
 from unittest.mock import patch
 
 
+class _RosNode:
+    def __init__(self, name):
+        self.parameters = {}
+        self.messages = []
+    def declare_parameter(self, name, value):
+        self.parameters[name] = value
+    def get_parameter(self, name):
+        return SimpleNamespace(value=self.parameters[name])
+    def create_publisher(self, *args):
+        return SimpleNamespace(publish=self.messages.append)
+    def create_subscription(self, *args):
+        pass
+
+
 class GeometryTests(unittest.TestCase):
+    def test_scan_keeps_horizontal_landmarks_and_masks_floor_self_and_overhead(self):
+        tree = ast.parse((SCRIPTS/'project_nav_scan.py').read_text())
+        cls = next(node for node in tree.body if isinstance(node, ast.ClassDef))
+        namespace = {'Node': _RosNode, 'np': np, 'json': json, 'Path': Path,
+                     'get_package_share_directory': lambda _: str(SCRIPTS.parents[1]/'src/jt16_bringup'),
+                     'PointCloud2': object, 'LaserScan': SimpleNamespace,
+                     'qos_profile_sensor_data': object(), 'inside_self': inside_self,
+                     'point_cloud2': SimpleNamespace(read_points=lambda message, **_: message.points)}
+        exec(compile(ast.Module(body=[cls], type_ignores=[]), '<scan projection>', 'exec'), namespace)
+        node = namespace['ProjectNavScan']()
+        # A horizontal far return is within the robot envelope; the other three are not obstacles.
+        points = np.array([(8., 0., 0.), (8., 0., -.36), (.22, 0., 0.), (6., 1., .4)],
+                          dtype=[('x', '<f4'), ('y', '<f4'), ('z', '<f4')])
+        node.convert(SimpleNamespace(points=points, header=SimpleNamespace(frame_id='body')))
+        scan = node.messages[0]
+        self.assertEqual(scan.header.frame_id, 'base_link')
+        self.assertEqual(np.isfinite(scan.ranges).sum(), 1)
+        self.assertAlmostEqual(scan.ranges[0], 7.97, places=5)
+
+    def test_snapshot_timestamps_preserve_static_geometry_during_motion(self):
+        tree = ast.parse((SCRIPTS/'instant_cloud_adapter.py').read_text())
+        cls = next(node for node in tree.body if isinstance(node, ast.ClassDef))
+        namespace = {'Node': _RosNode, 'np': np, 'json': json, 'Path': Path,
+                     'deepcopy': deepcopy,
+                     'get_package_share_directory': lambda _: str(SCRIPTS.parents[1]/'src/jt16_bringup'),
+                     'self_returns': self_returns, 'PointCloud2': object, 'PointField': SimpleNamespace,
+                     'qos_profile_sensor_data': object(),
+                     'point_cloud2': SimpleNamespace(read_points=lambda message, **_: message.points,
+                        create_cloud=lambda header, fields, points: SimpleNamespace(header=header, points=points))}
+        exec(compile(ast.Module(body=[cls], type_ignores=[]), '<snapshot adapter>', 'exec'), namespace)
+        node = namespace['Adapter']()
+        for i in range(10):
+            stamp = 1. + i*.01
+            c, s = math.cos(.6*stamp), math.sin(.6*stamp)
+            points = np.zeros((2, 20), dtype=[('x', '<f4'), ('y', '<f4'), ('z', '<f4'),
+                                             ('intensity', '<f4'), ('ring', '<u2')])
+            points['x'] = c*(4.-.35*stamp)+s
+            points['y'] = -s*(4.-.35*stamp)+c
+            points['z'] = -.1
+            points['ring'][1] = 1
+            node.convert(SimpleNamespace(points=points, height=2, width=20,
+                header=SimpleNamespace(stamp=SimpleNamespace(sec=1, nanosec=i*10000000))))
+        cloud = node.messages[0]
+        self.assertEqual(len(cloud.points), 40)
+        times = cloud.points['timestamp']
+        c, s = np.cos(.6*times), np.sin(.6*times)
+        world = np.column_stack((c*cloud.points['x']-s*cloud.points['y']+.35*times,
+                                 s*cloud.points['x']+c*cloud.points['y']))
+        np.testing.assert_allclose(world, np.tile([4., 1.], (40, 1)), atol=1e-6)
+
+    def test_filtered_rolling_cloud_epoch_matches_hesai_point_time_origin(self):
+        tree = ast.parse((SCRIPTS/'instant_cloud_adapter.py').read_text())
+        cls = next(node for node in tree.body if isinstance(node, ast.ClassDef))
+        namespace = {'Node': _RosNode, 'np': np, 'json': json, 'Path': Path,
+                     'deepcopy': deepcopy,
+                     'get_package_share_directory': lambda _: str(SCRIPTS.parents[1]/'src/jt16_bringup'),
+                     'self_returns': self_returns, 'PointCloud2': object, 'PointField': SimpleNamespace,
+                     'qos_profile_sensor_data': object(),
+                     'point_cloud2': SimpleNamespace(read_points=lambda message, **_: message.points,
+                        create_cloud=lambda header, fields, points: SimpleNamespace(header=header, points=points))}
+        exec(compile(ast.Module(body=[cls], type_ignores=[]), '<snapshot adapter>', 'exec'), namespace)
+        for empty in (False, True):
+            node = namespace['Adapter']()
+            headers = []
+            for i in range(10):
+                points = np.zeros((1, 10), dtype=[('x', '<f4'), ('y', '<f4'), ('z', '<f4'),
+                                                  ('intensity', '<f4'), ('ring', '<u2')])
+                points['x'] = np.nan if empty or i < 2 else 4.-(1.+i*.01)
+                points['z'] = -.1
+                header = SimpleNamespace(stamp=SimpleNamespace(sec=1, nanosec=i*10000000))
+                headers.append(header)
+                node.convert(SimpleNamespace(points=points, height=1, width=10, header=header))
+            cloud = node.messages[0]
+            epoch = cloud.header.stamp.sec+cloud.header.stamp.nanosec*1e-9
+            self.assertEqual(headers[0].stamp.nanosec, 0)
+            if empty:
+                self.assertEqual(len(cloud.points), 0)
+                self.assertEqual(epoch, 1.)
+            else:
+                self.assertEqual(epoch, 1.02)
+                # HESAI offsets each point from the first retained point timestamp.
+                reconstructed = epoch+cloud.points['timestamp']-cloud.points['timestamp'][0]
+                np.testing.assert_allclose(cloud.points['x']+reconstructed, 4., atol=1e-6)
+
     def test_terminal_observation_drain_is_bounded_and_keeps_mission_end(self):
         source=(SCRIPTS/'run_nav2_goal.py').read_text()
         code=source[source.index('observation_deadline='):source.index("summary={'result':'PROCESS_FAILURE'",source.index('observation_deadline='))]
@@ -67,6 +166,52 @@ class GeometryTests(unittest.TestCase):
             with self.assertRaises(FileExistsError):run_development_set(manifest,output)
             duplicate={**manifest,'entries':[manifest['entries'][0],{**manifest['entries'][0],'id':'other'}]}
             with self.assertRaises(ValueError):run_development_set(duplicate,Path(temp)/'duplicate')
+
+    def test_development_stop_finishes_current_case_without_starting_next(self):
+        import run_development_set as runner
+        manifest = {'name': 'stop', 'navigation_case_count': 2, 'entries': [
+            {'id': 'first', 'dataset': 'Arena', 'world': 'map2', 'obstacles': 5, 'seed': 0},
+            {'id': 'next', 'dataset': 'Arena', 'world': 'map5', 'obstacles': 5, 'seed': 0}]}
+        calls = []
+        def execute(command, **kwargs):
+            calls.append(command)
+            runner.request_stop(15, None)
+            run = Path(command[-1])
+            run.mkdir(parents=True)
+            (run / 'nav2-goal.json').write_text(json.dumps({'result': 'SUCCEEDED', 'scored_success': True}))
+            return SimpleNamespace(returncode=0)
+        with tempfile.TemporaryDirectory() as temp, patch.object(runner, 'stop_requested', False), \
+                patch.object(runner.subprocess, 'run', side_effect=execute):
+            output = Path(temp) / 'results'
+            with self.assertRaises(SystemExit) as stopped:
+                runner.run_development_set(manifest, output)
+            self.assertEqual(stopped.exception.code, 143)
+            self.assertEqual(len(calls), 1)
+            self.assertTrue((output / 'arena6/map2_obs05/seed_00/nav2-goal.json').exists())
+            self.assertFalse((output / 'arena6/map5_obs05').exists())
+            runner.stop_requested = False
+            last = Path(temp) / 'last'
+            with self.assertRaises(SystemExit) as stopped:
+                runner.run_development_set({**manifest, 'navigation_case_count': 1,
+                                            'entries': manifest['entries'][:1]}, last)
+            self.assertEqual(stopped.exception.code, 143)
+            self.assertFalse((last / 'development-summary.json').exists())
+
+    def test_map_odom_record_keeps_tf_timestamp_and_legacy_jump_metrics(self):
+        from navigation_metrics import tf_jump_metrics
+        source = (SCRIPTS / 'run_nav2_goal.py').read_text()
+        code = source[source.index('def tf_sample('):source.index('navigator.create_subscription(TFMessage')]
+        rows = []
+        namespace = {'map_odom': rows, 'pose_yaw': lambda rotation: rotation}
+        exec(code, namespace)
+        transform = SimpleNamespace(
+            header=SimpleNamespace(frame_id='map', stamp=SimpleNamespace(sec=12, nanosec=345000000)),
+            child_frame_id='odom', transform=SimpleNamespace(
+                translation=SimpleNamespace(x=1., y=2.), rotation=.3))
+        namespace['tf_sample'](SimpleNamespace(transforms=[transform]))
+        self.assertEqual(rows, [[1., 2., .3, 12.345]])
+        samples = rows + [[1.1, 2.2, .4, 12.445]]
+        self.assertEqual(tf_jump_metrics(samples), tf_jump_metrics([row[:3] for row in samples]))
 
     def test_mapping_requires_finite_fresh_inputs(self):
         valid = [[10., 0., 0., 0.]]
@@ -173,6 +318,7 @@ class GeometryTests(unittest.TestCase):
             manifests=root/'benchmarks/manifests';manifests.mkdir(parents=True)
             (manifests/'barn30.json').write_text(json.dumps({'entries':[{'world_id':0},{'world_id':1}]}))
             runner=scripts/'run_barn30_mapping.sh';runner.write_bytes((SCRIPTS/runner.name).read_bytes())
+            (scripts/'artifact_paths.py').write_bytes((SCRIPTS/'artifact_paths.py').read_bytes())
             (scripts/'run_barn_mapping.sh').write_text('mkdir -p "$2"\nif [ "$1" = 0 ]; then exit 1; fi\necho \'{"terminal_state":"COMPLETE","map_valid":true}\' > "$2/mapping-result.json"\n')
             (scripts/'score_v0.py').write_bytes((SCRIPTS/'score_v0.py').read_bytes())
             output=root/'results'
@@ -288,10 +434,10 @@ class GeometryTests(unittest.TestCase):
                          mppi['PathAlignCritic']['threshold_to_consider'])
         self.assertEqual(mppi['PathAngleCritic']['max_angle_to_furthest'],.4)
         self.assertEqual(mppi['critics'][1],'TimedObstacleCritic')
-        self.assertEqual(mppi['TimedObstacleCritic'],{'enabled':True,'cost_weight':1000.0,'clearance_m':.75})
+        self.assertEqual(mppi['TimedObstacleCritic'],{'enabled':True,'cost_weight':1000.0,'clearance_m':.75,'collision_cost':1000000.0})
         self.assertEqual(mppi['plugin'],'nav2_rotation_shim_controller::RotationShimController')
         self.assertEqual(mppi['primary_controller'],'nav2_mppi_controller::MPPIController')
-        self.assertFalse(mppi['rotate_to_goal_heading'])
+        self.assertTrue(mppi['rotate_to_goal_heading'])
         self.assertTrue(mppi['rotate_to_heading_once'])
         self.assertEqual(mppi['rotate_to_heading_angular_vel'],dwb['max_vel_theta'])
         self.assertEqual(mppi['max_angular_accel'],dwb['acc_lim_theta'])
@@ -343,6 +489,12 @@ class GeometryTests(unittest.TestCase):
             scan=layer['scan']
             self.assertLess(scan['min_obstacle_height'],-mount['position_m'][2])
             self.assertEqual(layer['min_obstacle_height'],scan['min_obstacle_height'])
+            self.assertEqual(layer['observation_sources'].split(),['scan','static_scan'])
+            self.assertTrue(scan['clearing']);self.assertFalse(scan['marking'])
+            marking=layer['static_scan']
+            self.assertEqual(marking['topic'],'/static_scan')
+            self.assertTrue(marking['marking']);self.assertFalse(marking['clearing'])
+            self.assertEqual(marking['min_obstacle_height'],scan['min_obstacle_height'])
         self.assertLessEqual(controller['goal_checker']['xy_goal_tolerance'],.25)
         self.assertEqual(controller['FollowPath']['xy_goal_tolerance'],controller['goal_checker']['xy_goal_tolerance'])
         self.assertGreaterEqual(controller['FollowPath']['min_vel_x'],params['velocity_smoother']['ros__parameters']['min_velocity'][0])
@@ -352,6 +504,10 @@ class GeometryTests(unittest.TestCase):
         approach=monitor['FootprintApproach']
         self.assertEqual(approach['action_type'],'approach')
         self.assertEqual(approach['footprint_topic'],'/local_costmap/published_footprint')
+        self.assertEqual(approach['min_points'],1)
+        local=params['local_costmap']['local_costmap']['ros__parameters']
+        self.assertEqual(local['plugins'][0],'static_layer')
+        self.assertEqual(local['static_layer'],params['global_costmap']['global_costmap']['ros__parameters']['static_layer'])
         self.assertGreaterEqual(approach['time_before_collision'],2.)
         self.assertIn('scan',monitor['observation_sources'])
         tree=ast.parse((SCRIPTS/'run_nav2_goal.py').read_text())
@@ -406,15 +562,16 @@ class GeometryTests(unittest.TestCase):
                  ('poll_obstacles','publish_polled','publish_observation')]
         callbacks=[];requests=[];published=[]
         response=SimpleNamespace(result=SimpleNamespace(result=0,RESULT_OK=0),
-                 state=SimpleNamespace(header=SimpleNamespace(frame_id='world',stamp=7.),
+                 state=SimpleNamespace(header=SimpleNamespace(frame_id='world',stamp=SimpleNamespace(sec=7,nanosec=0)),
                                        pose=SimpleNamespace(position=SimpleNamespace(x=4.))))
         future=SimpleNamespace(add_done_callback=callbacks.append,result=lambda:response)
         def query(request):requests.append(request.entity);return future
         namespace={'GetEntityState':SimpleNamespace(Request=lambda entity:SimpleNamespace(entity=entity)),
-                   'Odometry':lambda:SimpleNamespace(header=None,pose=SimpleNamespace(pose=None))}
+                   'Odometry':lambda:SimpleNamespace(header=None,pose=SimpleNamespace(pose=None),twist=SimpleNamespace(twist=SimpleNamespace(linear=SimpleNamespace(x=0.,y=0.))))}
         exec(compile(ast.Module(body=methods,type_ignores=[]),'<independent GT read>','exec'),namespace)
         node=SimpleNamespace(scenario={'pedsim_agents':[{},{}]},observation_pending={},obstacle_pending={0:True,1:True},
-             get=SimpleNamespace(call_async=query),dynamic_publisher=SimpleNamespace(publish=published.append))
+             get=SimpleNamespace(call_async=query),dynamic_publisher=SimpleNamespace(publish=published.append),
+             command_history=[(6.5,{0:[.2,-.1]}),(7.5,{0:[9.,9.]})])
         node.publish_observation=lambda f,i:namespace['publish_observation'](node,f,i)
         node.publish_polled=lambda f,i:namespace['publish_polled'](node,f,i)
         namespace['poll_obstacles'](node);namespace['poll_obstacles'](node)
@@ -422,7 +579,8 @@ class GeometryTests(unittest.TestCase):
         callbacks[0](future)
         self.assertEqual(node.obstacle_pending,{0:True,1:True})
         self.assertIs(published[0].pose.pose,response.state.pose)
-        self.assertEqual(published[0].header.stamp,7.)
+        self.assertEqual(published[0].header.stamp.sec,7)
+        self.assertEqual((published[0].twist.twist.linear.x,published[0].twist.twist.linear.y),(.2,-.1))
         self.assertEqual(published[0].child_frame_id,'dynamic_0')
         namespace['poll_obstacles'](node)
         self.assertEqual(requests,['dynamic_0','dynamic_1','dynamic_0'])
@@ -660,7 +818,7 @@ class GeometryTests(unittest.TestCase):
                 check=True, capture_output=True)
             info = yaml.safe_load((root/'output/map.yaml').read_text())
             grid = np.flipud(np.asarray(Image.open(root/'output/map.pgm')))
-            x, y = np.floor((np.array([.35, 0.]) - info['origin'][:2]) / info['resolution']).astype(int)
+            x, y = np.floor((points[-1,:2].astype(float) - info['origin'][:2]) / info['resolution']).astype(int)
             self.assertEqual(grid[y, x], 0)
             self.assertIn(205, grid)
 
@@ -717,6 +875,7 @@ class GeometryTests(unittest.TestCase):
             verify_provenance(output)
             runtime=json.loads((output/'run-provenance.json').read_text())['runtime_hashes']
             for filename in ('libmppi_controller.so','libnav2_smac_planner_2d.so',
+                             'libnav2_smac_planner.so','libnav2_smac_planner_lattice.so',
                              'librmw_cyclonedds_cpp.so'):
                 mppi=Path('/opt/ros/jazzy/lib')/filename
                 if not mppi.is_file():continue

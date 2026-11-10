@@ -1,8 +1,0 @@
-{
-  "result": "PROCESS_FAILURE",
-  "scored_success": false,
-  "nav2_action_success": false,
-  "localization_success": false,
-  "activation_error": "AMCL initial pose was not received",
-  "localization_initialization_latency_s": 59.9671814898029
-}

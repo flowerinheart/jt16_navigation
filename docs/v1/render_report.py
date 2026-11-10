@@ -17,6 +17,7 @@ import numpy as np
 import yaml
 
 from compare_results import BASELINE, ROOT, compare
+from artifact_paths import new_output
 sys.path.insert(0, str(ROOT))
 from docs.v0.render_report import map_panel
 from integration.scripts.navigation_metrics import local_trajectory
@@ -191,6 +192,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--full', type=Path, required=True)
     parser.add_argument('--dev16', type=Path, required=True)
-    parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--output', type=Path, default=new_output('reports', 'evaluation'))
     args = parser.parse_args()
     render(args.full.resolve(), args.dev16.resolve(), args.output.resolve())

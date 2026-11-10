@@ -1,5 +1,6 @@
 """Run after sourcing ROS and install/setup.bash, in an unused ROS_DOMAIN_ID."""
 import json
+import math
 import signal
 import subprocess
 import time
@@ -48,21 +49,30 @@ def check_derived_velocity(node, publisher, message, poses):
     assert any(abs(p.twist.twist.linear.x)>.01 for p in poses[before:]), 'bridge dropped derived velocity'
 
 
-def check_motion_forecast(node, publisher, clouds, message, fields, predictions, tracks, moving):
+def check_motion_forecast(node, publisher, clouds, message, fields, predictions, tracks, moving, forecasts, static_scans):
+    def static_return_kept():
+        return any(sum(math.isfinite(r) for r in scan.ranges)==1 and
+                   any(3.1<r<3.3 for r in scan.ranges) for scan in static_scans)
     start=time.monotonic();deadline=start+3.;next_publish=start
-    while time.monotonic()<deadline and not all(any(cloud.width for cloud in samples) for samples in (predictions,tracks,moving)):
+    while time.monotonic()<deadline and not (all(any(cloud.width for cloud in samples) for samples in (predictions,tracks,moving,forecasts)) and static_return_kept()):
         if time.monotonic()>=next_publish:
             message.header.stamp=node.get_clock().now().to_msg()
             publisher.publish(message)
             distance=1.+.2*(time.monotonic()-start)
             clouds.publish(point_cloud2.create_cloud(message.header,fields,
-                           [(distance,.022*i,-.2) for i in range(6)]))
+                           [(distance,.022*i,-.2) for i in range(6)]+[(3.,1.,-.2)]))
             next_publish=time.monotonic()+.1
         rclpy.spin_once(node,timeout_sec=.01)
     assert any(cloud.width for cloud in predictions), 'moving cluster has no forecast'
     velocities=[row['vx'] for cloud in tracks for row in point_cloud2.read_points(cloud,field_names=['vx'])]
     assert any(.1<float(speed)<.3 for speed in velocities), 'missing measured LiDAR velocity'
     assert any(cloud.width for cloud in moving), 'missing time-matched moving surfaces'
+    assert any(cloud.width for cloud in forecasts), 'missing separate forecast surfaces'
+    assert forecasts[-1].header.frame_id=='odom'
+    assert [field.name for field in forecasts[-1].fields]==['x','y','vx','vy']
+    assert static_return_kept(), 'static marking lost its wall or retained confirmed mover returns'
+    assert static_scans[-1].header.frame_id=='base_link'
+    assert static_scans[-1].time_increment==0.
 
 
 def main():
@@ -75,9 +85,13 @@ def main():
     poses, scans, transforms = [], [], []
     predictions, tracks = [], []
     moving=[]
+    forecasts=[]
+    static_scans=[]
     node.create_subscription(PointCloud2,'/predicted_obstacles',predictions.append,1)
     node.create_subscription(PointCloud2,'/obstacle_tracks',tracks.append,1)
     node.create_subscription(PointCloud2,'/moving_obstacle_points',moving.append,1)
+    node.create_subscription(PointCloud2,'/forecast_surface_points',forecasts.append,1)
+    node.create_subscription(LaserScan,'/static_scan',static_scans.append,qos_profile_sensor_data)
     publisher = node.create_publisher(Odometry, '/Odometry', 10)
     clouds = node.create_publisher(PointCloud2, '/cloud_registered_body', 10)
     node.create_subscription(Odometry, '/odom', poses.append, 10)
@@ -103,8 +117,8 @@ def main():
                          if info.node_name=='jt16_nav_scan_projection')
         assert body_reader.qos_profile.reliability==ReliabilityPolicy.RELIABLE
         check_derived_velocity(node, publisher, message, poses)
-        check_motion_forecast(node, publisher, clouds, message, fields, predictions, tracks, moving)
-        print('PASS installed bridge/TF/scan and LiDAR motion forecast interfaces')
+        check_motion_forecast(node, publisher, clouds, message, fields, predictions, tracks, moving, forecasts, static_scans)
+        print('PASS installed bridge/TF/raw/static scans and LiDAR motion forecast interfaces')
     finally:
         node.destroy_node()
         rclpy.shutdown()

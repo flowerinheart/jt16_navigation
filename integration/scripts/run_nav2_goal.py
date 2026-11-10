@@ -22,9 +22,10 @@ from rclpy.qos import qos_profile_sensor_data,QoSProfile,DurabilityPolicy
 from navigation_metrics import score_navigation
 from benchmark_geometry import covariance_valid,obstacle_observations_fresh
 from run_provenance import write_provenance
+from artifact_paths import new_output
 
 
-parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,required=True);parser.add_argument('--x',type=float,default=.30);parser.add_argument('--y',type=float,default=0.0);parser.add_argument('--initial-x',type=float,default=0.0);parser.add_argument('--initial-y',type=float,default=0.0);parser.add_argument('--initial-yaw',type=float,default=0.0);parser.add_argument('--ground-truth-origin-x',type=float);parser.add_argument('--ground-truth-origin-y',type=float);parser.add_argument('--ground-truth-origin-yaw',type=float);parser.add_argument('--ground-truth-is-world',action='store_true');parser.add_argument('--localization-reference-is-world',action='store_true');parser.add_argument('--goal-is-local',action='store_true');parser.add_argument('--score-goal-x',type=float);parser.add_argument('--score-goal-y',type=float);parser.add_argument('--score-goal-is-local',action='store_true');parser.add_argument('--waypoints-npz',type=Path);parser.add_argument('--timeout',type=float,default=45.0);parser.add_argument('--activation-timeout',type=float,default=60.0);parser.add_argument('--goal-tolerance',type=float,default=.25);parser.add_argument('--map-yaml',type=Path);parser.add_argument('--nav2-params-file',type=Path);parser.add_argument('--simulation-world',type=Path);parser.add_argument('--barn-world',type=Path);parser.add_argument('--shortest-path',type=float);parser.add_argument('--arena-scenario',type=Path);parser.add_argument('--arena-world',type=Path);parser.add_argument('--arena-seed',type=int,default=0);args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
+parser=argparse.ArgumentParser();parser.add_argument('--output',type=Path,default=new_output('evaluations', 'nav2-goal'));parser.add_argument('--x',type=float,default=.30);parser.add_argument('--y',type=float,default=0.0);parser.add_argument('--initial-x',type=float,default=0.0);parser.add_argument('--initial-y',type=float,default=0.0);parser.add_argument('--initial-yaw',type=float,default=0.0);parser.add_argument('--ground-truth-origin-x',type=float);parser.add_argument('--ground-truth-origin-y',type=float);parser.add_argument('--ground-truth-origin-yaw',type=float);parser.add_argument('--ground-truth-is-world',action='store_true');parser.add_argument('--localization-reference-is-world',action='store_true');parser.add_argument('--goal-is-local',action='store_true');parser.add_argument('--score-goal-x',type=float);parser.add_argument('--score-goal-y',type=float);parser.add_argument('--score-goal-is-local',action='store_true');parser.add_argument('--waypoints-npz',type=Path);parser.add_argument('--timeout',type=float,default=45.0);parser.add_argument('--activation-timeout',type=float,default=60.0);parser.add_argument('--goal-tolerance',type=float,default=.25);parser.add_argument('--map-yaml',type=Path);parser.add_argument('--nav2-params-file',type=Path);parser.add_argument('--simulation-world',type=Path);parser.add_argument('--barn-world',type=Path);parser.add_argument('--shortest-path',type=float);parser.add_argument('--arena-scenario',type=Path);parser.add_argument('--arena-world',type=Path);parser.add_argument('--arena-seed',type=int,default=0);args=parser.parse_args();args.output.mkdir(parents=True,exist_ok=True)
 
 class BoundedNavigator(BasicNavigator):
  def __init__(self,timeout):super().__init__();self.activation_deadline=time.monotonic()+timeout
@@ -55,7 +56,7 @@ class BoundedNavigator(BasicNavigator):
    rclpy.spin_once(self,timeout_sec=.05)
 
 import yaml
-static_prediction_enabled=False;timed_prediction_enabled=False
+static_prediction_enabled=False;timed_prediction_enabled=False;static_scan_enabled=False
 if args.nav2_params_file:
  nav_parameters=yaml.safe_load(args.nav2_params_file.read_text())
  local_parameters=nav_parameters['local_costmap']['local_costmap']['ros__parameters']
@@ -63,6 +64,7 @@ if args.nav2_params_file:
  static_prediction_enabled=any('motion_prediction' in parameters['plugins'] and parameters.get('motion_prediction',{}).get('enabled',True) for parameters in (local_parameters,global_parameters))
  follow_path=nav_parameters['controller_server']['ros__parameters']['FollowPath']
  timed_prediction_enabled='TimedObstacleCritic' in follow_path.get('critics',[]) and follow_path.get('TimedObstacleCritic',{}).get('enabled',True)
+ static_scan_enabled=any('obstacle_layer' in parameters['plugins'] and parameters.get('obstacle_layer',{}).get('static_scan',{}).get('topic')=='/static_scan' for parameters in (local_parameters,global_parameters))
 prediction_enabled=static_prediction_enabled or timed_prediction_enabled
 input_paths=[path for path in (args.barn_world,args.arena_world,args.arena_scenario,args.map_yaml,args.simulation_world,args.nav2_params_file) if path]
 if args.map_yaml:
@@ -70,15 +72,19 @@ if args.map_yaml:
  input_paths.append(args.map_yaml.parent/map_info['image'])
 write_provenance(args.output,input_paths,{key:str(value) if isinstance(value,Path) else value for key,value in vars(args).items()})
 rclpy.init(args=['--ros-args','-p','use_sim_time:=true']);navigator=BoundedNavigator(args.activation_timeout);gt=[];lio=[];fused=[];plans=[];amcl=[];map_odom=[];dynamic=[];commands={topic:[] for topic in ('cmd_vel_nav','cmd_vel_smoothed','cmd_vel')}
-odom_twist=[];scans=[];odom_pose_3d=[];prediction_stamps=[];predicted_points=[];obstacle_tracks=[]
+odom_twist=[];scans=[];static_scans=[];odom_pose_3d=[];prediction_stamps=[];predicted_points=[];obstacle_tracks=[]
 moving_point_stamps=[];moving_points=[]
-def moving_sample(message):
+rejected_stamps=[];rejected_points=[]
+forecast_stamps=[];forecast_points=[]
+def moving_sample(message, stamps=moving_point_stamps, points=moving_points):
  if message.header.frame_id!='odom':return
  stamp=message.header.stamp.sec+message.header.stamp.nanosec*1e-9
- moving_point_stamps.append(stamp)
+ stamps.append(stamp)
  rows=point_cloud2.read_points(message,field_names=['x','y','vx','vy'],skip_nans=False)
- moving_points.extend([stamp,*[float(row[name]) for name in ('x','y','vx','vy')]] for row in rows)
+ points.extend([stamp,*[float(row[name]) for name in ('x','y','vx','vy')]] for row in rows)
 navigator.create_subscription(PointCloud2,'/moving_obstacle_points',moving_sample,1)
+navigator.create_subscription(PointCloud2,'/slam_rejected_points',lambda message:moving_sample(message,rejected_stamps,rejected_points),1)
+navigator.create_subscription(PointCloud2,'/forecast_surface_points',lambda message:moving_sample(message,forecast_stamps,forecast_points),1)
 def prediction_sample(message):
  if message.header.frame_id!='odom':return
  stamp=message.header.stamp.sec+message.header.stamp.nanosec*1e-9
@@ -95,7 +101,11 @@ episode_publisher=navigator.create_publisher(Float64,'/benchmark/mission_start',
 for topic,samples in commands.items():navigator.create_subscription(Twist,f'/{topic}',lambda message,samples=samples:samples.append([message.linear.x,message.angular.z,navigator.get_clock().now().nanoseconds*1e-9]),100)
 navigator.create_subscription(Odometry,'/odom',lambda m:odom_twist.append([m.twist.twist.linear.x,m.twist.twist.angular.z,m.header.stamp.sec+m.header.stamp.nanosec*1e-9]),qos_profile_sensor_data)
 navigator.create_subscription(Odometry,'/odom',lambda m:odom_pose_3d.append([m.header.stamp.sec+m.header.stamp.nanosec*1e-9,m.pose.pose.position.x,m.pose.pose.position.y,m.pose.pose.position.z,m.pose.pose.orientation.x,m.pose.pose.orientation.y,m.pose.pose.orientation.z,m.pose.pose.orientation.w]),qos_profile_sensor_data)
-navigator.create_subscription(LaserScan,'/scan',lambda m:scans.append([m.header.stamp.sec+m.header.stamp.nanosec*1e-9,*m.ranges]),qos_profile_sensor_data)
+def scan_sample(message, samples=scans):
+ if message.header.frame_id!='base_link':return
+ samples.append([message.header.stamp.sec+message.header.stamp.nanosec*1e-9,*message.ranges])
+navigator.create_subscription(LaserScan,'/scan',scan_sample,qos_profile_sensor_data)
+navigator.create_subscription(LaserScan,'/static_scan',lambda message:scan_sample(message,static_scans),qos_profile_sensor_data)
 def gt_sample(m):
  q=m.pose.pose.orientation
  heading=math.atan2(2*(q.w*q.z+q.x*q.y),1-2*(q.y*q.y+q.z*q.z))
@@ -116,8 +126,17 @@ def dynamic_sample(message):
 navigator.create_subscription(Odometry,'/dynamic_obstacles/ground_truth',dynamic_sample,100)
 def tf_sample(message):
  for transform in message.transforms:
-  if transform.header.frame_id=='map' and transform.child_frame_id=='odom':map_odom.append([transform.transform.translation.x,transform.transform.translation.y,pose_yaw(transform.transform.rotation)])
+  if transform.header.frame_id=='map' and transform.child_frame_id=='odom':map_odom.append([transform.transform.translation.x,transform.transform.translation.y,pose_yaw(transform.transform.rotation),transform.header.stamp.sec+transform.header.stamp.nanosec*1e-9])
 navigator.create_subscription(TFMessage,'/tf',tf_sample,100)
+def navigation_input_failure(now):
+ if not obstacle_observations_fresh(obstacle_stamps,obstacle_count,now):return 'Benchmark obstacle observations stale'
+ if not fused or now-fused[-1][3]>.5:return 'FAST-LIO odometry stale'
+ if static_prediction_enabled and (not prediction_stamps or now-prediction_stamps[-1]>.5):return 'LiDAR motion prediction stale'
+ if timed_prediction_enabled and (not forecast_stamps or now-forecast_stamps[-1]>.5):return 'LiDAR timed obstacle input stale'
+ if static_scan_enabled and (not static_scans or now-static_scans[-1][0]>.5):return 'LiDAR static marking scan stale'
+ if amcl and not covariance_valid(amcl[-1][4:7]):return 'AMCL covariance invalid'
+ return None
+
 clock_deadline=time.monotonic()+5.
 while navigator.get_clock().now().nanoseconds==0 and time.monotonic()<clock_deadline:
  rclpy.spin_once(navigator,timeout_sec=.1)
@@ -129,8 +148,12 @@ except TimeoutError as error:
  (args.output/'nav2-goal.json').write_text(json.dumps(summary,indent=2));navigator.destroy_node();rclpy.shutdown();raise SystemExit(2)
 activation_latency=time.monotonic()-activation_start
 input_deadline=time.monotonic()+5.
-while (not fused or navigator.get_clock().now().nanoseconds*1e-9-fused[-1][3]>.5) and time.monotonic()<input_deadline:
+while navigation_input_failure(navigator.get_clock().now().nanoseconds*1e-9) and time.monotonic()<input_deadline:
  rclpy.spin_once(navigator,timeout_sec=.05)
+startup_failure=navigation_input_failure(navigator.get_clock().now().nanoseconds*1e-9)
+if startup_failure:
+ summary={'result':'PROCESS_FAILURE','input_failure':startup_failure,'scored_success':False,'scoring_valid':False,'nav2_action_success':False,'localization_success':False,'nav2_activation_latency_s':activation_latency}
+ (args.output/'nav2-goal.json').write_text(json.dumps(summary,indent=2));navigator.destroy_node();rclpy.shutdown();raise SystemExit(2)
 goal_heading=math.atan2(args.y-args.initial_y,args.x-args.initial_x)
 goal=PoseStamped();goal.header.frame_id='map';goal.header.stamp=navigator.get_clock().now().to_msg();goal.pose.position.x=args.x;goal.pose.position.y=args.y;goal.pose.orientation.z=math.sin(goal_heading/2);goal.pose.orientation.w=math.cos(goal_heading/2)
 goals=[goal]
@@ -155,16 +178,9 @@ while not navigator.isTaskComplete():
  if time.monotonic()-start>args.timeout*2+30:
   timed_out=True;navigator.cancelTask();break
  now=navigator.get_clock().now().nanoseconds*1e-9
- if not obstacle_observations_fresh(obstacle_stamps,obstacle_count,now):
-  input_failure='Benchmark obstacle observations stale';navigator.cancelTask();break
- if not fused or now-fused[-1][3] > .5:
-  input_failure='FAST-LIO odometry stale';navigator.cancelTask();break
- if static_prediction_enabled and (not prediction_stamps or now-prediction_stamps[-1]>.5):
-  input_failure='LiDAR motion prediction stale';navigator.cancelTask();break
- if timed_prediction_enabled and (not moving_point_stamps or now-moving_point_stamps[-1]>.5):
-  input_failure='LiDAR timed obstacle input stale';navigator.cancelTask();break
- if amcl and not covariance_valid(amcl[-1][4:7]):
-  input_failure='AMCL covariance invalid';navigator.cancelTask();break
+ input_failure=navigation_input_failure(now)
+ if input_failure:
+  navigator.cancelTask();break
  if sim_start is None and gt:sim_start=gt[-1][3]
  if sim_start is not None and gt and gt[-1][3]-sim_start>args.timeout:timed_out=True;navigator.cancelTask();break
 result=navigator.getResult();names={TaskResult.SUCCEEDED:'SUCCEEDED',TaskResult.CANCELED:'CANCELED',TaskResult.FAILED:'FAILED'}
@@ -187,14 +203,16 @@ summary['mission_start_stamp_s']=mission_start.data
 summary['mission_end_stamp_s']=mission_end
 summary.update(motion_prediction_enabled=prediction_enabled,prediction_message_count=len(prediction_stamps),predicted_point_count=len(predicted_points),moving_track_rows=len(obstacle_tracks))
 summary.update(timed_obstacle_critic_enabled=timed_prediction_enabled,static_prediction_layer_enabled=static_prediction_enabled,
-               moving_point_message_count=len(moving_point_stamps),moving_surface_point_count=len(moving_points))
+               moving_point_message_count=len(moving_point_stamps),moving_surface_point_count=len(moving_points),
+               forecast_surface_message_count=len(forecast_stamps),forecast_surface_point_count=len(forecast_points))
+summary.update(static_scan_enabled=static_scan_enabled,static_scan_message_count=len(static_scans))
 summary.update(score_navigation(dict(gt=gt,lio=lio,fused=fused,amcl=amcl,map_odom=map_odom,dynamic=dynamic),args,
                initial_sent_stamp,summary))
 summary['initial_pose_sent_stamp_s']=initial_sent_stamp
 summary['nav2_action_success']=summary['result']=='SUCCEEDED'
 
 np.savez_compressed(args.output/'navigation-trajectories.npz',gt=np.asarray(gt),lio=np.asarray(lio),fused=np.asarray(fused),amcl=np.asarray(amcl),map_odom=np.asarray(map_odom),dynamic=np.asarray(dynamic,dtype=float).reshape(-1,5))
-np.savez_compressed(args.output/'navigation-sensors.npz',odom_twist=np.asarray(odom_twist),odom_pose_3d=np.asarray(odom_pose_3d),scans=np.asarray(scans),prediction_stamps=np.asarray(prediction_stamps),predicted_points=np.asarray(predicted_points).reshape(-1,3),obstacle_tracks=np.asarray(obstacle_tracks).reshape(-1,5),moving_point_stamps=np.asarray(moving_point_stamps),moving_obstacle_points=np.asarray(moving_points).reshape(-1,5),**{topic:np.asarray(samples) for topic,samples in commands.items()})
+np.savez_compressed(args.output/'navigation-sensors.npz',odom_twist=np.asarray(odom_twist),odom_pose_3d=np.asarray(odom_pose_3d),scans=np.asarray(scans),static_scans=np.asarray(static_scans),prediction_stamps=np.asarray(prediction_stamps),predicted_points=np.asarray(predicted_points).reshape(-1,3),obstacle_tracks=np.asarray(obstacle_tracks).reshape(-1,5),moving_point_stamps=np.asarray(moving_point_stamps),moving_obstacle_points=np.asarray(moving_points).reshape(-1,5),slam_rejected_stamps=np.asarray(rejected_stamps),slam_rejected_points=np.asarray(rejected_points).reshape(-1,5),forecast_surface_stamps=np.asarray(forecast_stamps),forecast_surface_points=np.asarray(forecast_points).reshape(-1,5),**{topic:np.asarray(samples) for topic,samples in commands.items()})
 if plans:
  (args.output/'global-plan-initial.json').write_text(json.dumps(plans[0]))
  (args.output/'global-plan-final.json').write_text(json.dumps(plans[-1]))

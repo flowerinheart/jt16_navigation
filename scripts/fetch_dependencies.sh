@@ -16,3 +16,4 @@ for path in yaml.safe_load(open('dependencies.'+sys.argv[1]+'.repos'))['reposito
         print(path)
 PYTHON
 )
+case "$role" in deploy|runtime) bash "$ROOT/scripts/apply_dependency_patches.sh";; esac

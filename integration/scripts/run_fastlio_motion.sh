@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 TASK_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+RESULTS_ROOT=$(/usr/bin/python3 "$TASK_ROOT/scripts/artifact_paths.py" evaluations)
 REPO_ROOT=$(cd "$TASK_ROOT/.." && pwd)
-OUTPUT=${1:-"$TASK_ROOT/results/$(date +%Y%m%d-%H%M%S)-fastlio-motion"}
+OUTPUT=${1:-"$RESULTS_ROOT/$(date +%Y%m%d-%H%M%S)-fastlio-motion"}
 PARTITION="jt16_fastlio_$$"
 ROS_LOG_DIR_TASK=$(mktemp -d /tmp/jt16-fastlio-log.XXXXXX)
 set +u

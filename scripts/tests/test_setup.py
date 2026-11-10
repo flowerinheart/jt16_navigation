@@ -16,6 +16,67 @@ spec.loader.exec_module(deployment)
 
 
 class SetupTests(unittest.TestCase):
+
+    def test_all_build_commands_inherit_the_requested_job_limit(self):
+        script = ROOT / 'scripts/build.sh'
+        source = script.read_text()
+        prefix = source.split('set +u', 1)[0]
+        commands = [line.strip() for line in source.splitlines() if line.strip().startswith('colcon build')]
+        stub = "\ncolcon() { /usr/bin/python3 -c 'import os; print(os.environ[\"CMAKE_BUILD_PARALLEL_LEVEL\"], os.environ[\"MAKEFLAGS\"])'; }\n"
+        result = subprocess.run(['bash', '-c', prefix + stub + '\n'.join(commands), str(script)],
+                                env={**os.environ, 'BUILD_JOBS': '3'}, capture_output=True, text=True, check=True)
+        self.assertEqual(result.stdout.splitlines(), ['3 -j3'] * len(commands))
+
+
+    def test_dependency_patch_is_idempotent_and_rejects_incompatible_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            (root/'scripts').mkdir()
+            (root/'patches').mkdir()
+            repo = root/'external/runtime/FAST_LIO_Hesai'
+            (repo/'src').mkdir(parents=True)
+            shutil.copyfile(ROOT/'scripts/apply_dependency_patches.sh', root/'scripts/apply_dependency_patches.sh')
+            patch_file = ROOT/'patches/fast-lio.patch'
+            shutil.copyfile(patch_file, root/'patches'/patch_file.name)
+            original = subprocess.check_output(['git', '-C', str(ROOT/'external/runtime/FAST_LIO_Hesai'), 'show', 'HEAD:src/preprocess.cpp'])
+            source = repo/'src/preprocess.cpp'
+            source.write_bytes(original)
+            (repo/'src/laserMapping.cpp').write_bytes(subprocess.check_output(['git', '-C', str(ROOT/'external/runtime/FAST_LIO_Hesai'), 'show', 'HEAD:src/laserMapping.cpp']))
+            subprocess.run(['git', 'init', '-q', str(repo)], check=True)
+            nav_repo = root/'external/runtime/navigation2'
+            nav_source = nav_repo/'nav2_mppi_controller/src/critics/cost_critic.cpp'
+            nav_source.parent.mkdir(parents=True)
+            nav_original = None
+            for relative in ('nav2_mppi_controller/src/optimizer.cpp', 'nav2_mppi_controller/src/critics/cost_critic.cpp', 'nav2_smac_planner/include/nav2_smac_planner/utils.hpp', 'nav2_smac_planner/src/collision_checker.cpp'):
+                target = nav_repo/relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                original_file = subprocess.check_output(['git', '-C', str(ROOT/'external/runtime/navigation2'), 'show', 'HEAD:'+relative])
+                target.write_bytes(original_file)
+                if target == nav_source:
+                    nav_original = original_file
+            shutil.copyfile(ROOT/'patches/nav2-mppi.patch', root/'patches/nav2-mppi.patch')
+            subprocess.run(['git', 'init', '-q', str(nav_repo)], check=True)
+            command = ['bash', str(root/'scripts/apply_dependency_patches.sh')]
+            subprocess.run(command, check=True)
+            nav_applied = nav_source.read_bytes()
+            self.assertNotEqual(nav_applied, nav_original)
+            applied = source.read_bytes()
+            mapping = (repo/'src/laserMapping.cpp').read_bytes()
+            self.assertNotEqual(applied, original)
+            subprocess.run(command, check=True)
+            self.assertEqual(source.read_bytes(), applied)
+            self.assertEqual(nav_source.read_bytes(), nav_applied)
+            source.write_text('incompatible source\n')
+            result = subprocess.run(command, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(source.read_text(), 'incompatible source\n')
+            self.assertEqual((repo/'src/laserMapping.cpp').read_bytes(), mapping)
+            source.write_bytes(applied)
+            nav_source.write_text('incompatible native source\n')
+            result = subprocess.run(command, capture_output=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertEqual(nav_source.read_text(), 'incompatible native source\n')
+
     def test_profiles_pin_sources_and_exclude_unused_runtime_repos(self):
         deploy = yaml.safe_load((ROOT/'dependencies.deploy.repos').read_text())['repositories']
         benchmark = yaml.safe_load((ROOT/'dependencies.benchmark.repos').read_text())['repositories']

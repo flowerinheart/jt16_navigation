@@ -26,6 +26,8 @@ Thor原始`net.core.rmem_max/wmem_max`为212992字节，本机为4194304字节�
 
 整段脚本时间包括启动、导航/建图、评分与清理；BARN和Arena导航阶段分别为44.19秒、69.85秒。导航仿真超时150秒、进程上限600秒、容器内外层上限900秒；建图使用300秒超时、外层600秒。以上均正常退出，未触发外层超时，退出后测试容器已清理。
 
-原始结果：[传感器](sensors.json)、[BARN建图](barn022-mapping.json)、[BARN导航](barn022-navigation.json)、[Arena导航](arena-navigation.json)。修复前失败结果：[BARN](barn-before-fix.json)、[Arena](arena-before-fix.json)。完整日志、轨迹、生成地图与调试记录保留在Thor的工作卷；主机日志位于`/home/nvidia/jt16-navigation-deploy-20261104T083702Z/.setup/`。
+原始结果：`sensors.json`、`barn022-mapping.json`、`barn022-navigation.json`、`arena-navigation.json`。修复前失败结果：`barn-before-fix.json`、`arena-before-fix.json`。完整日志、轨迹、生成地图与调试记录保留在Thor的工作卷；主机日志位于`/home/nvidia/jt16-navigation-deploy-20261104T083702Z/.setup/`。
 
 这些是部署后实际运行的代表样例，未重跑全量V1评测；原来的批量评测仍暂停。
+
+原始 JSON 已归档到 `~/.jt16-navigation/evaluations/repository-cleanup-20261110-150638/docs/deployment-evidence/20261104/thor-simulation`，不随 Git clone 迁移。复现入口：`scripts/setup.sh`；容器证据由 `scripts/setup_container.sh` 写入 `JT16_DATA_HOME/reports/evaluation/`。上面的结论与指标可独立阅读。

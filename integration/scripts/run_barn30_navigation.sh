@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 TASK_ROOT=$(cd "$(dirname "$0")/.." && pwd)
-RESULTS=${1:-"$TASK_ROOT/results/v0/barn30"}
+RESULTS_ROOT=$(/usr/bin/python3 "$TASK_ROOT/scripts/artifact_paths.py" evaluations)
+RESULTS=${1:-"$RESULTS_ROOT/v0/barn30"}
 JOBS=${JOBS:-2}
 MANIFEST="$TASK_ROOT/benchmarks/manifests/barn30.json"
 QUEUE=$(mktemp /tmp/jt16-barn-nav-queue.XXXXXX)

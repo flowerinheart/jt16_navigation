@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 TASK_ROOT=$(cd "$(dirname "$0")/.." && pwd);REPO_ROOT=$(cd "$TASK_ROOT/.." && pwd)
-WORLD_ID=${1:?world id required};SEED=${2:?seed required};MAP_YAML=$(realpath "${3:?map yaml required}");OUTPUT=${4:?output directory required}
+RESULTS_ROOT=$(/usr/bin/python3 "$TASK_ROOT/scripts/artifact_paths.py" evaluations)
+WORLD_ID=${1:?world id required};SEED=${2:?seed required};MAP_YAML=$(realpath "${3:?map yaml required}");OUTPUT=${4:-"$RESULTS_ROOT/$(date +%Y%m%d-%H%M%S)-barn-${WORLD_ID}-${SEED}"}
 if [ -e "$OUTPUT" ] && { [ ! -d "$OUTPUT" ] || [ -n "$(find "$OUTPUT" -mindepth 1 -maxdepth 1 -print -quit)" ]; };then echo "Refusing to overwrite nonempty output: $OUTPUT" >&2;exit 2;fi
 NAV_TIMEOUT=${NAV_TIMEOUT:-150}
 USE_MAPPING_WAYPOINTS=${USE_MAPPING_WAYPOINTS:-0}
@@ -38,7 +39,7 @@ setsid gz sim -s -r --headless-rendering --seed "$SEED" "$WORLD" > "$OUTPUT/gaze
 setsid ros2 run ros_gz_bridge parameter_bridge '/jt16/points_raw/points@sensor_msgs/msg/PointCloud2[gz.msgs.PointCloudPacked' '/lidar_imu@sensor_msgs/msg/Imu[gz.msgs.IMU' '/clock@rosgraph_msgs/msg/Clock[gz.msgs.Clock' '/ground_truth/odom@nav_msgs/msg/Odometry[gz.msgs.Odometry' '/cmd_vel@geometry_msgs/msg/Twist]gz.msgs.Twist' --ros-args -r /lidar_imu:=/lidar_imu_raw > "$OUTPUT/bridge.log" 2>&1 & P2=$!
 PYTHON=/usr/bin/python3;LIB="$REPO_ROOT/install/jt16_bringup/lib/jt16_bringup"
 setsid "$PYTHON" "$LIB/instant_cloud_adapter.py" > "$OUTPUT/cloud-adapter.log" 2>&1 & P3=$!;setsid "$PYTHON" "$LIB/sim_imu_adapter.py" > "$OUTPUT/imu-adapter.log" 2>&1 & P4=$!;setsid "$PYTHON" "$LIB/project_nav_scan.py" > "$OUTPUT/nav-scan.log" 2>&1 & P5=$!
-setsid "$PYTHON" "$LIB/predict_obstacles.py" --ros-args -p use_sim_time:=true > "$OUTPUT/obstacle-prediction.log" 2>&1 & PP=$!
+setsid "$PYTHON" "$LIB/predict_obstacles.py" --ros-args -p use_sim_time:=true -p "nav2_params_file:=$PARAMS" > "$OUTPUT/obstacle-prediction.log" 2>&1 & PP=$!
 setsid ros2 launch fast_lio mapping_jt16.launch.py use_sim_time:=true rviz:=false config_file:="$TASK_ROOT/config/jt16_instant.yaml" > "$OUTPUT/fastlio.log" 2>&1 & P6=$!;setsid "$PYTHON" "$LIB/lio_odom_bridge.py" > "$OUTPUT/lio-bridge.log" 2>&1 & P7=$!
 setsid ros2 launch nav2_bringup localization_launch.py map:="$MAP_YAML" params_file:="$PARAMS" use_sim_time:=true > "$OUTPUT/localization.log" 2>&1 & P8=$!;setsid ros2 launch nav2_bringup navigation_launch.py params_file:="$PARAMS" use_sim_time:=true > "$OUTPUT/navigation.log" 2>&1 & P9=$!
 /usr/bin/python3 "$TASK_ROOT/scripts/resource_monitor.py" --pids "$P1" "$P2" "$P3" "$P4" "$P5" "$P6" "$P7" "$P8" "$P9" "$PP" --output "$OUTPUT/resources.json" > "$OUTPUT/resources.log" 2>&1 & PM=$!

@@ -1,0 +1,139 @@
+diff --git a/src/laserMapping.cpp b/src/laserMapping.cpp
+index d327fcc..d4cb5d8 100644
+--- a/src/laserMapping.cpp
++++ b/src/laserMapping.cpp
+@@ -62,6 +62,7 @@
+ #include <pcl/filters/voxel_grid.h>
+ #include <pcl/io/pcd_io.h>
+ #include <sensor_msgs/msg/point_cloud2.hpp>
++#include <sensor_msgs/point_cloud2_iterator.hpp>
+ #include <sensor_msgs/msg/imu.hpp>
+ #include <std_srvs/srv/trigger.hpp>
+ #include <tf2_ros/transform_broadcaster.h>
+@@ -515,6 +516,72 @@ bool sync_packages(MeasureGroup &meas)
+ }
+ 
+ int process_increments = 0;
++// The owned odometry bridge preserves camera_init coordinates in the odom frame.
++std::vector<Eigen::Vector4f> rejected_surfaces;
++double rejected_surface_stamp = -1.0;
++
++bool on_rejected_surface(const PointType &point)
++{
++    const double dt = lidar_end_time - rejected_surface_stamp;
++    if (dt < 0.0 || dt > 0.5) return false;
++    const double radius = 2.0 * filter_size_map_min;
++    for (const auto &surface : rejected_surfaces)
++    {
++        const double dx = point.x - surface[0] - dt * surface[2];
++        const double dy = point.y - surface[1] - dt * surface[3];
++        if (dx * dx + dy * dy <= radius * radius) return true;
++    }
++    return false;
++}
++
++std::vector<BoxPointType> rejected_surface_boxes()
++{
++    std::vector<BoxPointType> boxes;
++    const double dt = lidar_end_time - rejected_surface_stamp;
++    if (dt < 0.0 || dt > 0.5) return boxes;
++    const double radius = 2.0 * filter_size_map_min;
++    for (const auto &surface : rejected_surfaces)
++    {
++        BoxPointType box;
++        for (int axis = 0; axis < 2; ++axis)
++        {
++            const double previous = surface[axis] - 0.5 * surface[axis + 2];
++            const double current = surface[axis] + dt * surface[axis + 2];
++            box.vertex_min[axis] = std::min(previous, current) - radius;
++            box.vertex_max[axis] = std::max(previous, current) + radius;
++        }
++        box.vertex_min[2] = -cube_len;
++        box.vertex_max[2] = cube_len;
++        boxes.push_back(box);
++    }
++    return boxes;
++}
++
++void rejected_surface_cbk(const sensor_msgs::msg::PointCloud2::SharedPtr message)
++{
++    if (message->header.frame_id != "odom") return;
++    if (message->data.empty())
++    {
++        rejected_surfaces.clear();
++        return;
++    }
++    try
++    {
++        sensor_msgs::PointCloud2ConstIterator<float> x(*message, "x"), y(*message, "y"),
++            vx(*message, "vx"), vy(*message, "vy");
++        std::vector<Eigen::Vector4f> surfaces;
++        for (; x != x.end(); ++x, ++y, ++vx, ++vy)
++            if (std::isfinite(*x) && std::isfinite(*y) && std::isfinite(*vx) && std::isfinite(*vy))
++                surfaces.emplace_back(*x, *y, *vx, *vy);
++        rejected_surfaces = std::move(surfaces);
++        rejected_surface_stamp = rclcpp::Time(message->header.stamp).seconds();
++    }
++    catch (const std::runtime_error &)
++    {
++        rejected_surfaces.clear();
++    }
++}
++
+ void map_incremental()
+ {
+     PointVector PointToAdd;
+@@ -525,6 +592,7 @@ void map_incremental()
+     {
+         /* transform to world frame */
+         pointBodyToWorld(&(feats_down_body->points[i]), &(feats_down_world->points[i]));
++        if (on_rejected_surface(feats_down_world->points[i])) continue;
+         /* decide if need add to map */
+         if (!Nearest_Points[i].empty() && flg_EKF_inited)
+         {
+@@ -838,6 +906,7 @@ void h_share_model(state_ikfom &s, esekfom::dyn_share_datastruct<double> &ekfom_
+             point_selected_surf[i] = points_near.size() < NUM_MATCH_POINTS ? false : pointSearchSqDis[NUM_MATCH_POINTS - 1] > 5 ? false : true;
+         }
+ 
++        point_selected_surf[i] &= !on_rejected_surface(point_world);
+         if (!point_selected_surf[i]) continue;
+ 
+         VF(4) pabcd;
+@@ -1103,6 +1172,7 @@ public:
+ 
+         /*** ROS subscribe initialization ***/
+         sub_pcl_pc_ = this->create_subscription<sensor_msgs::msg::PointCloud2>(lid_topic, rclcpp::SensorDataQoS(), standard_pcl_cbk);
++        sub_rejected_ = this->create_subscription<sensor_msgs::msg::PointCloud2>("/slam_rejected_points", 1, rejected_surface_cbk);
+         sub_imu_ = this->create_subscription<sensor_msgs::msg::Imu>(imu_topic, rclcpp::SensorDataQoS(), imu_cbk);
+         pubLaserCloudFull_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/cloud_registered", 20);
+         pubLaserCloudFull_body_ = this->create_publisher<sensor_msgs::msg::PointCloud2>("/cloud_registered_body", 20);
+@@ -1194,6 +1264,9 @@ private:
+                 }
+                 return;
+             }
++            // Remove transient returns inserted before their motion was confirmed.
++            auto rejected_boxes = rejected_surface_boxes();
++            if (!rejected_boxes.empty()) ikdtree.Delete_Point_Boxes(rejected_boxes);
+             int featsFromMapNum = ikdtree.validnum();
+             kdtree_size_st = ikdtree.size();
+             
+@@ -1348,6 +1421,7 @@ private:
+     std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+     rclcpp::TimerBase::SharedPtr timer_;
+     rclcpp::TimerBase::SharedPtr map_pub_timer_;
++    rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr sub_rejected_;
+     rclcpp::Service<std_srvs::srv::Trigger>::SharedPtr map_save_srv_;
+ 
+     bool effect_pub_en = false, map_pub_en = false;
+diff --git a/src/preprocess.cpp b/src/preprocess.cpp
+index d9929f9..1331c31 100644
+--- a/src/preprocess.cpp
++++ b/src/preprocess.cpp
+@@ -146,6 +146,7 @@ void Preprocess::hesai_handler(const sensor_msgs::msg::PointCloud2::UniquePtr &m
+     {
+       PointCloudXYZI &pl = pl_buff[j];
+       int linesize = pl.size();
++      if (linesize < 2) continue;
+       vector<orgtype> &types = typess[j];
+       types.clear();
+       types.resize(linesize);

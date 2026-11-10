@@ -9,6 +9,8 @@ for manifest in manifests:
   p=root/path
   actual=subprocess.run(['git','-C',str(p),'rev-parse','HEAD'],capture_output=True,text=True)
   ok=actual.returncode==0 and actual.stdout.strip()==item['version']
+  if ok and path in ('external/runtime/FAST_LIO_Hesai','external/runtime/navigation2'):
+   ok=subprocess.run(['git','-C',str(p),'apply','--reverse','--check',str(root/'patches'/('fast-lio.patch' if path.endswith('FAST_LIO_Hesai') else 'nav2-mppi.patch'))],capture_output=True).returncode==0
   print(('PASS' if ok else 'FAIL'),path)
   if not ok:failures.append(path)
 sys.exit(bool(failures))

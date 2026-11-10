@@ -2,7 +2,8 @@
 set -euo pipefail
 
 TASK_ROOT=$(cd "$(dirname "$0")/.." && pwd)
-OUTPUT=${1:-"$TASK_ROOT/results/$(date +%Y%m%d-%H%M%S)-projection-analysis"}
+RESULTS_ROOT=$(/usr/bin/python3 "$TASK_ROOT/scripts/artifact_paths.py" evaluations)
+OUTPUT=${1:-"$RESULTS_ROOT/$(date +%Y%m%d-%H%M%S)-projection-analysis"}
 PITCH_UP=${2:-0.0}
 WORLD_MODE=${3:-smoke}
 PARTITION="jt16_projection_$$"

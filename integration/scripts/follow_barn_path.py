@@ -4,6 +4,7 @@ import argparse
 import json
 import math
 import time
+from collections import deque
 from pathlib import Path
 
 import numpy as np
@@ -11,11 +12,14 @@ import rclpy
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
+from sensor_msgs.msg import PointCloud2
+from sensor_msgs_py import point_cloud2
 from scipy.spatial.transform import Rotation
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from run_provenance import write_provenance
 from benchmark_geometry import mapping_input_failure
+from sensor_geometry import map_points_with_base_height
 
 
 parser = argparse.ArgumentParser()
@@ -69,6 +73,39 @@ rclpy.init(args=['--ros-args', '-p', 'use_sim_time:=true'])
 node = Node('barn_mapping_path_follower')
 publisher = node.create_publisher(Twist, '/cmd_vel', 10)
 gt, lio = [], []
+poses_3d, pending_clouds = deque(maxlen=50), deque(maxlen=5)
+map_clouds, cloud_stamps = [], []
+mount = json.loads((Path(__file__).resolve().parents[2]/'src/jt16_bringup/config/jt16_mount.json').read_text())
+
+def process_clouds():
+    while pending_clouds and poses_3d:
+        message = pending_clouds[0]
+        capture = stamp(message)
+        pose = min(poses_3d, key=lambda p:abs(p[0]-capture))
+        if abs(pose[0]-capture)>1e-6:
+            if poses_3d[-1][0]<capture:
+                return
+            pending_clouds.popleft()
+            continue
+        pending_clouds.popleft()
+        rows = point_cloud2.read_points(message,field_names=['x','y','z'],skip_nans=True).reshape(-1)
+        xyz = np.column_stack([rows[name] for name in ('x','y','z')])
+        if len(xyz):
+            map_clouds.append(map_points_with_base_height(xyz,pose[1],pose[2],mount).astype(np.float32))
+            cloud_stamps.append(capture)
+
+def pose_3d_sample(message):
+    p,q = message.pose.pose.position,message.pose.pose.orientation
+    poses_3d.append((stamp(message),[p.x,p.y,p.z],[q.x,q.y,q.z,q.w]))
+    process_clouds()
+
+def cloud_sample(message):
+    if message.header.frame_id=='body':
+        pending_clouds.append(message)
+        process_clouds()
+
+node.create_subscription(Odometry,'/Odometry',pose_3d_sample,qos_profile_sensor_data)
+node.create_subscription(PointCloud2,'/cloud_registered_body',cloud_sample,qos_profile_sensor_data)
 raw_imu, adapted_imu, lio_attitude, reported_twist = [], [], [], []
 def imu_sample(message):
     q=message.orientation
@@ -176,6 +213,9 @@ if result['terminal_state'] == 'COMPLETE' and (
     result.update(terminal_state='INPUT_FAILURE', input_failure='invalid_paired_trajectory')
 (args.output / 'mapping-result.json').write_text(json.dumps(result, indent=2, allow_nan=False) + '\n')
 np.savez_compressed(args.output / 'mapping-trajectories.npz', gt=np.asarray(gt), lio=np.asarray(lio))
+np.savez_compressed(args.output/'mapping-scan-points.npz',
+                    map_xy_height=np.concatenate(map_clouds) if map_clouds else np.empty((0,3),dtype=np.float32),
+                    cloud_stamps=np.asarray(cloud_stamps))
 np.savez_compressed(args.output/'input-diagnostics.npz',raw_imu=np.asarray(raw_imu),adapted_imu=np.asarray(adapted_imu),lio_attitude=np.asarray(lio_attitude),reported_twist=np.asarray(reported_twist))
 print(json.dumps(result, indent=2))
 node.destroy_node()

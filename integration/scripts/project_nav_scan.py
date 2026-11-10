@@ -20,7 +20,7 @@ class ProjectNavScan(Node):
         config = json.loads((Path(get_package_share_directory('jt16_bringup')) / 'config/jt16_mount.json').read_text())
         self.declare_parameter('pitch_up', float(config['pitch_up_rad']))
         self.declare_parameter('min_height', 0.02)
-        self.declare_parameter('max_height', 0.35)
+        self.declare_parameter('max_height', float(config['self_filter_max_m'][2]))
         self.declare_parameter('self_min_x', float(config['self_filter_min_m'][0]))
         self.declare_parameter('self_max_x', float(config['self_filter_max_m'][0]))
         self.declare_parameter('self_min_y', float(config['self_filter_min_m'][1]))

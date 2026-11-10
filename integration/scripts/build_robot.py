@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Generate a JT16-mounted upstream XLeRobot without changing vendor files."""
 import argparse
+from artifact_paths import prepare_workspace
 import json
 from pathlib import Path
 import xml.etree.ElementTree as ET
@@ -19,6 +20,7 @@ def rigid_planar_model(robot):
             ET.SubElement(gazebo,'mu2').text='0'
 
 ROOT = Path(__file__).resolve().parents[1]
+prepare_workspace(ROOT.parent)
 parser = argparse.ArgumentParser()
 mount = json.loads((ROOT.parent/'src/jt16_bringup/config/jt16_mount.json').read_text())
 parser.add_argument('--height', type=float, default=mount['position_m'][2])

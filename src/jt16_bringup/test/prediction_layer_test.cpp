@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <chrono>
 #include <cmath>
 #include <cstring>
@@ -77,6 +78,35 @@ protected:
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr publisher;
 };
 
+TEST_F(PredictionLayerTest, SameCellForecastsPreserveTheWholeGridAcrossUpdatesAndOrigins)
+{
+  auto message = cloud();
+  ASSERT_TRUE(deliver(message, true, 252));
+  nav2_costmap_2d::Costmap2D single(40, 40, .1, -2., -2.);
+  layer->updateCosts(single, 0, 0, 40, 40);
+  const float extra[6] = {1.02f, .02f, 0.f, 1.08f, .08f, 0.f};
+  message.width = 3; message.row_step = 36; message.data.resize(36);
+  std::memcpy(message.data.data() + 12, extra, sizeof(extra));
+  ASSERT_TRUE(deliver(message, true, 252));
+  nav2_costmap_2d::Costmap2D multiple(40, 40, .1, -2., -2.);
+  layer->updateCosts(multiple, 0, 0, 40, 40);
+  EXPECT_EQ(std::memcmp(single.getCharMap(), multiple.getCharMap(), 1600), 0);
+  multiple.resetMap(0, 0, 40, 40);
+  layer->updateCosts(multiple, 0, 0, 40, 40);
+  EXPECT_EQ(std::memcmp(single.getCharMap(), multiple.getCharMap(), 1600), 0);
+  nav2_costmap_2d::Costmap2D shifted(40, 40, .1, -1.95, -1.95);
+  layer->updateCosts(shifted, 0, 0, 40, 40);
+  EXPECT_EQ(shifted.getCost(29, 19), 252);
+  EXPECT_EQ(shifted.getCost(30, 20), 252);
+  message.width = 2; message.row_step = 24;
+  std::memcpy(message.data.data() + 12, extra + 3, 12);
+  message.data.resize(24);
+  ASSERT_TRUE(deliver(message, true, 252));
+  nav2_costmap_2d::Costmap2D reference(40, 40, .1, -1.95, -1.95);
+  layer->updateCosts(reference, 0, 0, 40, 40);
+  EXPECT_EQ(std::memcmp(shifted.getCharMap(), reference.getCharMap(), 1600), 0);
+}
+
 TEST_F(PredictionLayerTest, ForecastsTransformIntoTheCostmapFrame)
 {
   geometry_msgs::msg::TransformStamped transform;
@@ -135,4 +165,27 @@ TEST_F(PredictionLayerTest, ForecastsClearWithoutErasingRealCostsAndRejectInvali
   float invalid = std::numeric_limits<float>::quiet_NaN();
   std::memcpy(message.data.data(), &invalid, 4);
   EXPECT_TRUE(deliver(message, false, nav2_costmap_2d::FREE_SPACE));
+}
+
+TEST_F(PredictionLayerTest, ConfiguredDisabledLayerLeavesBoundsAndCostsUnchanged)
+{
+  node->declare_parameter("disabled_prediction.enabled", false);
+  auto disabled=std::make_shared<jt16_bringup::PredictionLayer>();
+  disabled->initialize(parent.get(), "disabled_prediction", buffer.get(), node,
+    node->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive));
+  EXPECT_TRUE(disabled->isCurrent());
+  double min_x=.3,min_y=.4,max_x=.5,max_y=.6;
+  disabled->updateBounds(0,0,0,&min_x,&min_y,&max_x,&max_y);
+  EXPECT_EQ(min_x,.3);EXPECT_EQ(min_y,.4);EXPECT_EQ(max_x,.5);EXPECT_EQ(max_y,.6);
+  nav2_costmap_2d::Costmap2D grid(40,40,.1,-2,-2,42);
+  disabled->updateCosts(grid,0,0,40,40);
+  EXPECT_TRUE(std::all_of(grid.getCharMap(),grid.getCharMap()+1600,
+    [](unsigned char cost) {return cost==42;}));
+  disabled->reset();
+  EXPECT_TRUE(disabled->isCurrent());
+  disabled->updateBounds(0,0,0,&min_x,&min_y,&max_x,&max_y);
+  EXPECT_EQ(min_x,.3);EXPECT_EQ(min_y,.4);EXPECT_EQ(max_x,.5);EXPECT_EQ(max_y,.6);
+  disabled->updateCosts(grid,0,0,40,40);
+  EXPECT_TRUE(std::all_of(grid.getCharMap(),grid.getCharMap()+1600,
+    [](unsigned char cost) {return cost==42;}));
 }

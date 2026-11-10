@@ -17,6 +17,20 @@ def pose_at_stamp(poses, stamp):
     return nearest[1] if abs(nearest[0] - stamp) <= .03 else None
 
 
+def static_scan_ranges(ranges, angle_min, angle_increment, pose, tracks, stamp):
+    result = np.asarray(ranges, dtype=float).copy()
+    points = [track['motion'][1] for track in tracks
+              if 'motion' in track and track['motion'][0] == stamp]
+    if not points:
+        return result
+    c, s = np.cos(pose[2]), np.sin(pose[2])
+    base = (np.concatenate(points)-pose[:2])@np.array([[c,-s],[s,c]])
+    # Current confirmed surfaces came from this full-revolution scan, not leased forecasts.
+    bins = np.rint(np.mod(np.arctan2(base[:,1],base[:,0])-angle_min,2*np.pi)/angle_increment).astype(int)%len(result)
+    result[bins] = np.inf
+    return result
+
+
 def scan_groups(base, indices, bins):
     groups = []
     for i, point in enumerate(base):
@@ -29,13 +43,13 @@ def scan_groups(base, indices, bins):
     return groups
 
 
-def scan_clusters(ranges, angle_min, angle_increment, pose, range_min=.15):
+def scan_clusters(ranges, angle_min, angle_increment, pose, range_min=.15, range_max=np.inf, minimum_points=4):
     ranges = np.asarray(ranges, dtype=float)
     pose = np.asarray(pose, dtype=float)
-    if ranges.ndim!=1 or pose.shape != (3,) or not np.isfinite(pose).all() or not np.isfinite([angle_min,angle_increment]).all() or angle_increment <= 0:
+    if ranges.ndim!=1 or pose.shape != (3,) or not np.isfinite(pose).all() or not np.isfinite([angle_min,angle_increment,range_min]).all() or angle_increment <= 0 or not 0<=range_min<range_max:
         raise ValueError('invalid scan pose/angles')
     angles = angle_min + np.arange(len(ranges)) * angle_increment
-    valid = np.isfinite(ranges) & (ranges >= range_min) & (ranges <= 4.)
+    valid = np.isfinite(ranges) & (ranges >= range_min) & (ranges <= range_max)
     indices = np.flatnonzero(valid)
     base = np.column_stack((ranges[valid]*np.cos(angles[valid]), ranges[valid]*np.sin(angles[valid])))
     groups = scan_groups(base,indices,len(ranges))
@@ -43,13 +57,14 @@ def scan_clusters(ranges, angle_min, angle_increment, pose, range_min=.15):
     rotation = np.asarray([[c,-s],[s,c]])
     # shortcut: track separated compact clusters only; extend for merged crowds/large movers.
     return [np.asarray(group)@rotation.T+pose[:2] for group in groups
-            if len(group)>=4 and np.linalg.norm(np.ptp(group,axis=0))<=1.2]
+            if len(group)>=minimum_points and np.linalg.norm(np.ptp(group,axis=0))<=1.2]
 
 
 def surface_translation(reference, points):
     """Fit translation against surface normals instead of a visibility-dependent centroid."""
     tree = cKDTree(reference)
-    neighbors = reference[tree.query(reference, k=min(5, len(reference)))[1]]
+    # Global PCA on a small surface leaves translation rank deficient.
+    neighbors = reference[tree.query(reference, k=min(5, len(reference)-1))[1]]
     centered = neighbors-neighbors.mean(axis=1, keepdims=True)
     covariance = np.einsum('nki,nkj->nij', centered, centered)
     normals = np.linalg.eigh(covariance)[1][:, :, 0]
@@ -115,12 +130,30 @@ def validated_clusters(clusters):
     return result
 
 
-def moving_surfaces(tracks, stamp):
+def static_map_exclusions(clusters, cells, distances, resolution, origin, robot, variance, margin):
+    """Reject a whole compact surface only when the static map clearly contradicts it."""
+    c, s = np.cos(origin[2]), np.sin(origin[2])
+    exclusions = []
+    for points in clusters:
+        grid = np.floor((points-origin[:2])@np.array([[c,-s],[s,c]])/resolution).astype(int)
+        x, y = grid.T
+        inside = (x>=0)&(x<cells.shape[1])&(y>=0)&(y<cells.shape[0])
+        if not inside.all() or not (cells[y,x]==0).all():
+            exclusions.append(False)
+            continue
+        radius = np.linalg.norm(points-robot[:2],axis=1)
+        # Triangle bound includes translation/yaw correlation without assuming independence.
+        uncertainty = 3*(np.sqrt(np.maximum(variance[:2],0).sum())+radius*np.sqrt(max(variance[2],0)))
+        exclusions.append(bool((distances[y,x]>margin+uncertainty+np.sqrt(2)*resolution).all()))
+    return exclusions
+
+
+def moving_surfaces(tracks, stamp, key='motion'):
     moving = []
     for track in tracks:
-        if 'motion' not in track:
+        if key not in track:
             continue
-        observed,points,velocity = track['motion']
+        observed,points,velocity = track[key]
         # shortcut: bridge at most 0.5 s of lost confirmation, not persistent occlusion.
         if stamp-observed <= .5:
             moving.append(np.column_stack((points+velocity*(stamp-observed),
@@ -134,9 +167,15 @@ def update_track(points, center, stamp, previous):
     track = {'history':history,'points':points}
     if previous is not None and 'motion' in previous:
         track['motion'] = previous['motion']
+        track['forecast_motion'] = previous['forecast_motion']
     velocity = track_velocity(history,points)
     if velocity is not None:
+        # Retain recently observed sides without extending motion confirmation or its lease.
+        surfaces = np.concatenate([points, *[surface+velocity*(stamp-observed)
+            for observed,_,surface in history if 0 < stamp-observed <= .5]])
+        _, first = np.unique(surfaces.astype(np.float32), axis=0, return_index=True)
         track['motion'] = (stamp,points,velocity)
+        track['forecast_motion'] = (stamp,surfaces[np.sort(first)],velocity)
     return track,velocity
 
 
@@ -150,6 +189,7 @@ class MotionPredictor:
         self.tracks = []
         self.stamp = None
         self.moving_points = np.empty((0,4))
+        self.forecast_points = np.empty((0,4))
 
     def update(self, clusters, stamp):
         if not np.isfinite(stamp) or stamp<0 or (self.stamp is not None and stamp<=self.stamp):
@@ -160,18 +200,20 @@ class MotionPredictor:
         centers = [points.mean(axis=0) for points in clusters]
         matches = match_clusters(clusters,centers,old)
         self.tracks = []
-        predicted, velocities = [], []
+        velocities = []
         for i,points in enumerate(clusters):
             track,velocity = update_track(points,centers[i],stamp,
                                           old[matches[i]] if i in matches else None)
             self.tracks.append(track)
             if velocity is not None:
                 velocities.append([*centers[i],*velocity])
-                # Cover the controller's 3.7 s rollout, including lateral arrivals at a stop.
-                predicted.extend(points+velocity*t for t in np.arange(.2,4.01,.2))
         self.stamp = stamp
         matched = {id(old[j]) for j in matches.values()}
         self.tracks.extend(unobserved_motion(previous,matched,stamp))
         self.moving_points = moving_surfaces(self.tracks,stamp)
-        return (np.concatenate(predicted) if predicted else np.empty((0,2)),
+        self.forecast_points = moving_surfaces(self.tracks,stamp,'forecast_motion')
+        # Forecast geometry includes past sides; SLAM keeps actual retained observations.
+        predicted = [self.forecast_points[:,:2]+self.forecast_points[:,2:]*t
+                     for t in np.arange(.2,4.01,.2)]
+        return (np.concatenate(predicted),
                 np.asarray(velocities,dtype=float).reshape(-1,4))

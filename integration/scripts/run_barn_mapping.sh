@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 TASK_ROOT=$(cd "$(dirname "$0")/.." && pwd)
+RESULTS_ROOT=$(/usr/bin/python3 "$TASK_ROOT/scripts/artifact_paths.py" evaluations)
 REPO_ROOT=$(cd "$TASK_ROOT/.." && pwd)
 WORLD_ID=${1:?world id required}
-OUTPUT=${2:?output directory required}
+OUTPUT=${2:-"$RESULTS_ROOT/$(date +%Y%m%d-%H%M%S)-mapping-barn-${WORLD_ID}"}
 if [ -e "$OUTPUT" ] && { [ ! -d "$OUTPUT" ] || [ -n "$(find "$OUTPUT" -mindepth 1 -maxdepth 1 -print -quit)" ]; };then echo "Refusing to overwrite nonempty output: $OUTPUT" >&2;exit 2;fi
 if [ -e "$OUTPUT/mapping-result.json" ] || [ -e "$OUTPUT/map.pcd" ];then echo "Use a new output directory; historical mapping evidence is read-only" >&2;exit 2;fi
 MAP_MAX_LINEAR=${MAP_MAX_LINEAR:-0.25}
@@ -55,7 +56,7 @@ trap cleanup EXIT
 timeout -k 5s 30s ros2 service call /map_save std_srvs/srv/Trigger '{}' > "$OUTPUT/map-save.log"
 if [ -s "$PCD" ]; then
   cp "$PCD" "$OUTPUT/map.pcd"
-  /usr/bin/python3 "$TASK_ROOT/scripts/pcd_to_occupancy.py" --pcd "$OUTPUT/map.pcd" --trajectory "$OUTPUT/mapping-trajectories.npz" --output "$OUTPUT/nav-map" > "$OUTPUT/map-conversion.log"
+  /usr/bin/python3 "$TASK_ROOT/scripts/pcd_to_occupancy.py" --pcd "$OUTPUT/map.pcd" --scan-points "$OUTPUT/mapping-scan-points.npz" --trajectory "$OUTPUT/mapping-trajectories.npz" --output "$OUTPUT/nav-map" > "$OUTPUT/map-conversion.log"
   /usr/bin/python3 "$TASK_ROOT/scripts/score_barn_map.py" --world "$REPO_ROOT/external/benchmarks/the-barn-challenge/jackal_helper/worlds/BARN/world_${WORLD_ID}.world" --map "$OUTPUT/nav-map/map.yaml" --output "$OUTPUT/map-metrics.json" > "$OUTPUT/map-scoring.log"
   /usr/bin/python3 "$TASK_ROOT/scripts/write_map_bundle_metadata.py" --run "$OUTPUT" --world-id "$WORLD_ID" > "$OUTPUT/map-metadata.log"
 else

@@ -17,7 +17,18 @@ def write_provenance(output, inputs=(), parameters=None):
              *root.glob('install/jt16_bringup/share/jt16_bringup/*plugins.xml'),
              *root.glob('src/jt16_bringup/CMakeLists.txt'),
              *root.glob('src/jt16_bringup/package.xml'),
-             *root.glob('external/runtime/FAST_LIO_Hesai/src/*.cpp')]
+             *root.glob('external/runtime/FAST_LIO_Hesai/src/*.cpp'),
+             *root.glob('external/runtime/FAST_LIO_Hesai/src/*.hpp'),
+             *root.glob('external/runtime/FAST_LIO_Hesai/include/**/*.h'),
+             *root.glob('external/runtime/FAST_LIO_Hesai/include/**/*.hpp'),
+             root/'external/runtime/navigation2/nav2_mppi_controller/CMakeLists.txt',
+             *root.glob('external/runtime/navigation2/nav2_mppi_controller/src/**/*.cpp'),
+             *root.glob('external/runtime/navigation2/nav2_mppi_controller/include/**/*.hpp'),
+             *root.glob('external/runtime/navigation2/nav2_smac_planner/src/**/*.cpp'),
+             *root.glob('external/runtime/navigation2/nav2_smac_planner/include/**/*.hpp'),
+             *root.glob('patches/*.patch'),
+             root/'dependencies.runtime.repos', root/'dependencies.deploy.repos',
+             root/'scripts/build.sh', root/'scripts/apply_dependency_patches.sh']
     archive = Path(output) / 'executed-inputs'
     if archive.exists():
         raise FileExistsError('use a new candidate directory; do not mix run identities')
@@ -40,7 +51,9 @@ def write_provenance(output, inputs=(), parameters=None):
         target.write_bytes(data)
         input_hashes[str(path)] = {'sha256': hashlib.sha256(data).hexdigest(),
                                   'archive': str(target.relative_to(Path(output)))}
-    binaries = [*root.glob('install/fast_lio/lib/fast_lio/*'),
+    binaries = [*root.glob('install/nav2_smac_planner/lib/*.so'),
+                *root.glob('install/nav2_mppi_controller/lib/*.so'),
+                *root.glob('install/fast_lio/lib/fast_lio/*'),
                 *Path('/usr/lib/python3/dist-packages/gz/transport13').glob('_transport*.so'),
                 *Path('/usr/lib/x86_64-linux-gnu').glob('libgz-transport13.so.*'),
                 *Path('/usr/lib/x86_64-linux-gnu').glob('libgz-msgs10.so.*'),
@@ -55,6 +68,7 @@ def write_provenance(output, inputs=(), parameters=None):
                     'libdwb_critics.so', 'libstandard_traj_generator.so', 'libsimple_goal_checker.so',
                     'libnav2_costmap_2d_core.so', 'liblayers.so',
                     'libnav2_navfn_planner.so', 'libnav2_smac_planner_2d.so',
+                    'libnav2_smac_planner.so', 'libnav2_smac_planner_lattice.so',
                     'libamcl_core.so', 'libcollision_monitor_core.so',
                     'librmw_cyclonedds_cpp.so', 'librmw_fastrtps_cpp.so'))]
     runtime_hashes = {str(path.relative_to(root) if path.is_relative_to(root) else path): hashlib.sha256(path.read_bytes()).hexdigest()

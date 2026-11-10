@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Publish Gazebo entity ground truth and optionally drive Arena obstacles."""
 import argparse,json,math,time
+from collections import deque
+from arena_motion import motion_state
 from pathlib import Path
 import rclpy
 from nav_msgs.msg import Odometry
@@ -24,7 +26,7 @@ class Adapter(Node):
    while not self.gz.service_info(self.move_service):
     if time.monotonic()>=deadline:raise RuntimeError('Native batch pose service unavailable')
     time.sleep(.1)
-   self.obstacle_start_time=None;self.dynamic_publisher=self.create_publisher(Odometry,'/dynamic_obstacles/ground_truth',100);self.get.wait_for_service(timeout_sec=20);self.create_timer(.2,self.update_obstacles)
+   self.command_history=deque(maxlen=8);self.obstacle_start_time=None;self.dynamic_publisher=self.create_publisher(Odometry,'/dynamic_obstacles/ground_truth',100);self.get.wait_for_service(timeout_sec=20);self.create_timer(.2,self.update_obstacles)
    self.observation_pending={};self.create_timer(.1,self.poll_obstacles)
    self.create_subscription(Float64,'/benchmark/mission_start',self.start_episode,QoSProfile(depth=1,durability=DurabilityPolicy.TRANSIENT_LOCAL))
  def start_episode(self,message):
@@ -41,18 +43,13 @@ class Adapter(Node):
   now=self.get_clock().now();current=now.nanoseconds*1e-9
   if current==0.:return
   elapsed=0. if self.obstacle_start_time is None else max(0.,current-self.obstacle_start_time)
-  request=Pose_V()
+  request=Pose_V();commanded={}
   for index,agent in enumerate(self.scenario['pedsim_agents']):
-   points=[agent['pos'],*agent.get('waypoints',[])];points=[points[(i+a.seed)%len(points)] for i in range(len(points))]
-   if a.seed%2:points=list(reversed(points))
-   speed=max(float(agent.get('vmax',.3)),.1);lengths=[math.dist(x,y) for x,y in zip(points,points[1:]+points[:1])];period=sum(lengths)/speed;phase=elapsed%period if period else 0.;position=points[0]
-   for x,y,length in zip(points,points[1:]+points[:1],lengths):
-    duration=length/speed
-    if phase<=duration:
-     ratio=phase/duration if duration else 0.;position=[x[0]+ratio*(y[0]-x[0]),x[1]+ratio*(y[1]-x[1])];break
-    phase-=duration
+   position,velocity=motion_state(agent,a.seed,elapsed)
+   commanded[index]=velocity if self.obstacle_start_time is not None else [0.,0.]
    pose=request.pose.add();pose.name=f'dynamic_{index}';pose.position.x=position[0];pose.position.y=position[1];pose.position.z=.85;pose.orientation.w=1.
   self.move_obstacles(request)
+  self.command_history.append((current,commanded))
  def move_obstacles(self,request):
   # Use native batch pose commands, not the ROS interface's full-state synchronization.
   ok,response=self.gz.request(self.move_service,request,Pose_V,Boolean,1000)
@@ -71,6 +68,10 @@ class Adapter(Node):
   response=future.result()
   if not response or response.result.result!=response.result.RESULT_OK:return
   message=Odometry();message.header=response.state.header;message.header.frame_id='world';message.child_frame_id=f'dynamic_{index}';message.pose.pose=response.state.pose
+  stamp=message.header.stamp.sec+message.header.stamp.nanosec*1e-9
+  # Kinematic command velocity, not a measured physical entity twist.
+  command=next((values.get(index,[0.,0.]) for when,values in reversed(self.command_history) if when<=stamp),[0.,0.])
+  message.twist.twist.linear.x,message.twist.twist.linear.y=map(float,command)
   self.dynamic_publisher.publish(message)
 rclpy.init(args=ros_args);node=Adapter()
 try:rclpy.spin(node)

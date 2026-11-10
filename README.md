@@ -6,7 +6,7 @@ See [deployment and dependency profiles](docs/deployment.md) for ROCm, CUDA/Thor
 XLeRobot + Hesai JT16 mapping, AMCL localization and Nav2 navigation on ROS 2 Jazzy / Gazebo Harmonic.
 
 V1 candidate G passed all **16/16 development cases**, **10/10 fresh BARN maps**, and **6/6 required repeats**, with zero collisions or input/process failures. Its frozen full benchmark is paused by user: 30/30 valid maps, BARN 144/150 strict successes, Arena 10/10 collected strict successes, zero collisions and one navigation PROCESS_FAILURE. Fifty Arena results and supplemental TIMEOUT reruns remain pending. V1 performance acceptance remains pending. Earlier candidates and every failed run remain preserved.
-See the [V1 plan](docs/v1/plan.md) and [development evidence](docs/v1/progress.md).
+See the [V1 plan](docs/v1/plan.md) and [current acceptance report](docs/v1/report.md).
 Versioned map images and success/failure replays: [evaluation demos](demos/README.md).
 
 
@@ -16,7 +16,7 @@ Repository: [flowerinheart/jt16_navigation](https://github.com/flowerinheart/jt1
 ## Pipeline and evaluation
 
 - Official Hesai FAST-LIO supplies the only `/odom` and `odom → base_link`; AMCL owns `map → odom`.
-- Native Smac 2D plans on saved maps. Native MPPI evaluates motion with a time-matched LiDAR obstacle critic; the global map receives soft future occupancy for earlier route selection.
+- Native Smac Hybrid checks the rectangular footprint on saved maps and retains reverse paths with a penalty based on the forward/reverse speed limits. Native MPPI uses confirmed LiDAR motion forecasts and a capped proximity cost for foreground surfaces whose velocity is unresolved; the global map receives soft future occupancy for earlier route selection. SLAM filters retained tracked observations, while navigation forecasts also retain recently observed sides under the same motion confirmation and expiry rules. The timed critic reserves its collision penalty for unexpanded footprint overlap; unresolved expansion contributes bounded proximity cost. Costmaps use raw scans for clearing and current-confirmation-filtered scans for marking; localization, prediction and collision monitoring retain raw scans.
 - Motion estimates register visible surfaces, preserving partial-view tracks without semantic labels. Confirmed motion expires after 0.5 s without a fresh confirmation.
 - Scan poses interpolate bracketing odometry without extending input freshness. Benchmark scripts default to the installed Cyclone DDS middleware; the native `RMW_IMPLEMENTATION` environment variable remains available.
 - Navigation uses LiDAR geometry and the saved map. Ground truth drives the prescribed mapping acquisition path, supplies the idealized simulation IMU input, and scores navigation; mapping is not autonomous exploration.
@@ -45,10 +45,10 @@ ROS_DOMAIN_ID=194 /usr/bin/python3 integration/tests/ros_interface_smoke.py
 - Git tracks only owned src/, configuration, launch code, scripts and documentation.
 - vcstool imports Git repositories using exact commit IDs from dependencies.*.repos.
 - external/runtime contains algorithm/driver sources; external/reference contains templates and evaluation references. external/ is ignored by Git.
-- All dependency repositories are physical directories under external/. A fresh clone imports them via scripts/fetch_dependencies.sh. Vendor source remains separately versioned and must not be silently modified.
+- All dependency repositories are physical directories under external/. A fresh clone imports them via scripts/fetch_dependencies.sh. Vendor source remains separately versioned; tracked patches under patches/ are applied by fetch/build and checked by scripts/check_dependencies.py.
 - colcon orchestrates builds. C++ / configuration packages use ament_cmake; future Python nodes use ament_python. No custom monolithic build system.
-- ROS Jazzy + Gazebo Harmonic are the target. Nav2/ros_gz are system packages; navigation2 source is a reference, not a duplicate build target.
-- scripts/build.sh scaffold builds only owned src. runtime adds FAST-LIO and the Hesai driver; their dependencies must be provisioned first. KISS-Matcher and small_gicp are CMake libraries, not assumed to be colcon ROS packages; future owned localization package will link separately installed pinned libraries through find_package.
+- ROS Jazzy + Gazebo Harmonic are the target. MPPI and Smac use patched, pinned Nav2 source; the remaining Nav2 and ros_gz components use system packages.
+- scripts/build.sh scaffold builds only owned src. runtime adds patched Nav2 MPPI and Smac, FAST-LIO and the Hesai driver; their dependencies must be provisioned first. KISS-Matcher and small_gicp are CMake libraries, not assumed to be colcon ROS packages; future owned localization package will link separately installed pinned libraries through find_package.
 - Use rosdep install --from-paths src external/runtime/FAST_LIO_Hesai external/runtime/HesaiLidar_ROS_2.0 --ignore-src -r -y when system-install privileges are available. Existing integration/deps user-local extraction is a prototype fallback, not a portable installation.
 - Do not recursively build all external sources: the reference workspace embeds alternative FAST-LIO, RTAB-Map and KISS-Matcher versions.
 - Fixes to vendor code go to a pinned fork or explicit reviewed patch, never silent copies. Record changed source identity when scoring.
@@ -81,3 +81,5 @@ All project material now resides below this directory:
 - docs/sources.initial.lock.json: original download identity (historical paths).
 
 After relocation, regenerate integration/models and integration/worlds with integration/scripts/build_robot.py, gz sdf -p and integration/scripts/build_world.py. Rebuild runtime binaries before use; old ROOT_DIR/compiler paths are not valid. Raw historical evidence is preserved and must not be rewritten to pretend it was generated here.
+
+Local outputs follow [artifact storage rules](docs/artifact-storage.md): `~/.jt16-navigation/` stores evaluations, generated reports, demos and caches. Set `JT16_DATA_HOME` to change the root; reusable code and project specifications remain in Git.

@@ -26,7 +26,7 @@ Thor源码目录：`/home/nvidia/jt16-navigation-deploy-20261104T083702Z`。
 Thor工作卷：`jt16-workspace-runtime-aarch64`。
 Thor依赖镜像：`jt16-deps:jazzy-runtime-aarch64`，ID `sha256:1e715d666cd60606d4736ca9ac529c645e6479f6c90af0f1146b5bf10ac63935`。
 
-原始检查结果：[ROCm](rocm-runtime.json)、[Thor CUDA](thor-cuda-runtime.json)、[benchmark](benchmark-cpu.json)。完整系统包版本、Ubuntu源与构建日志保存在对应工作卷的`deployment-evidence/`及源码目录`.setup/`。
+原始检查结果：`rocm-runtime.json`、`thor-cuda-runtime.json`、`benchmark-cpu.json`。完整系统包版本、Ubuntu源与构建日志保存在对应工作卷的`deployment-evidence/`及源码目录`.setup/`。
 
 ## 网络与范围
 
@@ -35,3 +35,5 @@ Thor依赖镜像：`jt16-deps:jazzy-runtime-aarch64`，ID `sha256:1e715d666cd606
 FAST-LIO、AMCL、MPPI和Hesai主链路仍使用CPU；GPU检查验证运行库初始化与设备访问。未验证真实传感器、机器人运动或GPU算法加速；V1历史性能评测保持暂停。
 
 后续Thor实际传感器、建图与导航样例验证及发现的网络配置问题见[仿真验证记录](thor-simulation/README.md)。
+
+原始 JSON 已归档到 `~/.jt16-navigation/evaluations/repository-cleanup-20261110-150638/docs/deployment-evidence/20261104`，不随 Git clone 迁移。复现入口：`scripts/setup.sh`；容器证据由 `scripts/setup_container.sh` 写入 `JT16_DATA_HOME/reports/evaluation/`。上面的结论与指标可独立阅读。

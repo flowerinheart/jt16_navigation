@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Deterministically rasterize a binary FAST-LIO PCD into a Nav2 map."""
+"""Rasterize FAST-LIO PCD or paired scan-time points into a Nav2 map."""
 import argparse
 import json
 from pathlib import Path
 
 import numpy as np
 from PIL import Image
-from benchmark_geometry import dilate_occupied
 
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--pcd', type=Path, required=True)
 parser.add_argument('--output', type=Path, required=True)
+parser.add_argument('--scan-points', type=Path)
 parser.add_argument('--resolution', type=float, default=.05)
 parser.add_argument('--min-height', type=float, default=.05)
 parser.add_argument('--max-height', type=float, default=.60)
@@ -24,42 +24,51 @@ args = parser.parse_args()
 if args.resolution<=0 or args.min_hits<1 or args.min_height>=args.max_height:
     raise ValueError('invalid rasterization parameters')
 
-with args.pcd.open('rb') as stream:
-    header = []
-    while True:
-        line = stream.readline()
-        if not line:
-            raise RuntimeError('PCD header ended before DATA')
-        decoded = line.decode('ascii').strip()
-        header.append(decoded)
-        if decoded.startswith('DATA '):
-            break
-    payload = stream.read()
+if args.scan_points:
+    xyz = np.load(args.scan_points)['map_xy_height']
+    if xyz.ndim!=2 or xyz.shape[1]!=3:
+        raise ValueError('invalid scan-time mapping points')
+    point_count = len(xyz)
+else:
+    with args.pcd.open('rb') as stream:
+        header = []
+        while True:
+            line = stream.readline()
+            if not line:
+                raise RuntimeError('PCD header ended before DATA')
+            decoded = line.decode('ascii').strip()
+            header.append(decoded)
+            if decoded.startswith('DATA '):
+                break
+        payload = stream.read()
 
-meta = {line.split()[0]: line.split()[1:] for line in header if line and not line.startswith('#')}
-if meta['DATA'][0] != 'binary':
-    raise RuntimeError('only binary PCD is supported')
-fields = meta['FIELDS']
-sizes = list(map(int, meta['SIZE']))
-types = meta['TYPE']
-counts = list(map(int, meta.get('COUNT', ['1'] * len(fields))))
-formats = []
-for size, kind, count in zip(sizes, types, counts):
-    base = {
-        ('F', 4): '<f4', ('F', 8): '<f8', ('U', 1): 'u1', ('U', 2): '<u2',
-        ('U', 4): '<u4', ('I', 1): 'i1', ('I', 2): '<i2', ('I', 4): '<i4'
-    }[(kind, size)]
-    formats.append((base, (count,)) if count > 1 else base)
-dtype = np.dtype({'names': fields, 'formats': formats})
-point_count = int(meta['POINTS'][0])
-cloud = np.frombuffer(payload, dtype=dtype, count=point_count)
-xyz = np.stack([cloud['x'], cloud['y'], cloud['z']], axis=1).astype(float)
+    meta = {line.split()[0]: line.split()[1:] for line in header if line and not line.startswith('#')}
+    if meta['DATA'][0] != 'binary':
+        raise RuntimeError('only binary PCD is supported')
+    fields = meta['FIELDS']
+    sizes = list(map(int, meta['SIZE']))
+    types = meta['TYPE']
+    counts = list(map(int, meta.get('COUNT', ['1'] * len(fields))))
+    formats = []
+    for size, kind, count in zip(sizes, types, counts):
+        base = {
+            ('F', 4): '<f4', ('F', 8): '<f8', ('U', 1): 'u1', ('U', 2): '<u2',
+            ('U', 4): '<u4', ('I', 1): 'i1', ('I', 2): '<i2', ('I', 4): '<i4'
+        }[(kind, size)]
+        formats.append((base, (count,)) if count > 1 else base)
+    dtype = np.dtype({'names': fields, 'formats': formats})
+    point_count = int(meta['POINTS'][0])
+    cloud = np.frombuffer(payload, dtype=dtype, count=point_count)
+    xyz = np.stack([cloud['x'], cloud['y'], cloud['z']], axis=1).astype(float)
 finite = np.isfinite(xyz).all(axis=1)
-# FAST-LIO's initialized world origin is not guaranteed to lie on the floor.
-# Estimate the dominant horizontal surface, then apply robot-relative heights.
-z_values = xyz[finite, 2]
-histogram, edges = np.histogram(z_values, bins=max(64, int(np.sqrt(len(z_values)))))
-floor_z = float((edges[np.argmax(histogram)] + edges[np.argmax(histogram) + 1]) * .5)
+if args.scan_points:
+    floor_z = 0.0
+else:
+    # FAST-LIO's initialized world origin is not guaranteed to lie on the floor.
+    # Estimate the dominant horizontal surface, then apply robot-relative heights.
+    z_values = xyz[finite, 2]
+    histogram, edges = np.histogram(z_values, bins=max(64, int(np.sqrt(len(z_values)))))
+    floor_z = float((edges[np.argmax(histogram)] + edges[np.argmax(histogram) + 1]) * .5)
 valid = finite & (xyz[:, 2] >= floor_z + args.min_height) & (xyz[:, 2] <= floor_z + args.max_height)
 points = xyz[valid]
 if not len(points):
@@ -86,7 +95,7 @@ cells = np.floor((points[:, :2] - minimum) / args.resolution).astype(int)
 hit_counts = np.zeros_like(grid, dtype=np.uint32)
 np.add.at(hit_counts, (cells[:, 1], cells[:, 0]), 1)
 grid[hit_counts >= args.min_hits] = 0
-grid[dilate_occupied(grid == 0)] = 0
+# Nav2 inflation supplies clearance; the saved map records measured occupancy.
 
 # Traversed footprint can label unknown cells free, never erase occupied returns.
 if trajectory is not None:
@@ -114,7 +123,8 @@ yaml = (
 )
 (args.output / 'map.yaml').write_text(yaml)
 summary = {
-    'source': str(args.pcd), 'input_points': point_count,
+    'source': str(args.scan_points or args.pcd),
+    'height_reference': 'scan-time robot base plane' if args.scan_points else 'estimated global floor', 'input_points': point_count,
     'height_filtered_points': int(len(points)), 'resolution_m': args.resolution,
     'estimated_floor_z_m': floor_z,
     'height_range_above_floor_m': [args.min_height, args.max_height],

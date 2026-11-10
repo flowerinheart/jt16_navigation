@@ -3,6 +3,7 @@
 import json,time
 from pathlib import Path
 import rclpy
+from artifact_paths import artifact_dir
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import PointCloud2,Imu
@@ -16,7 +17,7 @@ node.create_subscription(Imu,'/lidar_imu',imu,qos_profile_sensor_data)
 deadline=time.monotonic()+20
 while time.monotonic()<deadline and (len(result['points'])<10 or len(result['imu'])<100):rclpy.spin_once(node,timeout_sec=0.2)
 result['received']={k:len(v) for k,v in result.items()}
-path=Path(__file__).resolve().parents[1]/'results/sensors-smoke.json';path.write_text(json.dumps(result,indent=2))
+path=artifact_dir('evaluations')/'sensors-smoke.json';path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(result,indent=2))
 print(result['received']);print(result['points'][:1]);print(result['imu'][:1])
 node.destroy_node();rclpy.shutdown()
 raise SystemExit(0 if all(result['received'].values()) else 1)

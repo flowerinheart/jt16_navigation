@@ -1,9 +1,11 @@
 import argparse
+from artifact_paths import prepare_workspace
 import json
 import math
 from pathlib import Path
 import xml.etree.ElementTree as E
 r=Path(__file__).resolve().parents[1]
+prepare_workspace(r.parent)
 (r/'worlds').mkdir(parents=True, exist_ok=True)
 parser=argparse.ArgumentParser();parser.add_argument('--coverage',action='store_true');parser.add_argument('--dynamic',action='store_true');args=parser.parse_args()
 sdf=E.Element('sdf',version='1.9');world=E.SubElement(sdf,'world',name='jt16_smoke')

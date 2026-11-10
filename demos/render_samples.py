@@ -10,15 +10,16 @@ from types import SimpleNamespace
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'docs/v1'))
 from render_report import load_navigation, map_panel, local_trajectory
+from artifact_paths import artifact_dir
 import matplotlib.pyplot as plt
 from matplotlib.animation import FFMpegWriter
 from matplotlib.patches import Circle, Polygon
 import numpy as np
 
-OUT = ROOT / 'demos'
+OUT = artifact_dir('demos')
 RUNS = {
-    'v0': ROOT / 'integration/results/v0/full-benchmark-20261101',
-    'v1-candidate-g': ROOT / 'integration/results/v1/full-benchmark-20261104-g',
+    'v0': artifact_dir('evaluations') / 'v0/full-benchmark-20261101',
+    'v1-candidate-g': artifact_dir('evaluations') / 'v1/full-benchmark-20261104-g',
 }
 CASES = {
     'v0': [('success', 'arena6/small_warehouse_obs05/seed_00'),
@@ -36,9 +37,9 @@ def digest(path):
 
 def record(version, source, output, metrics, files):
     assert output.stat().st_size > 0
-    return dict(version=version, source=str(source.relative_to(ROOT)),
+    return dict(version=version, source=str(source),
                 output=str(output.relative_to(OUT)), metrics=metrics,
-                source_sha256={str(p.relative_to(ROOT)): digest(p) for p in files},
+                source_sha256={str(p): digest(p) for p in files},
                 output_sha256=digest(output))
 
 
@@ -74,18 +75,30 @@ def mapping(version, world):
                   occupied_f1=metrics['occupied_f1']), files)
 
 
-def navigation(version, bucket, relative):
+def navigation(version, bucket, relative, first_person=False):
     case = load_navigation(RUNS[version], relative, relative)
     assert case is not None
     result, params = case['summary'], case['identity']['parameters']
     assert bool(result['scored_success']) == (bucket == 'success')
     gt = case['gt']
+    world_gt = gt.copy()
+    shapes = None
+    if first_person:
+        from first_person import scene, image
+        world_file = Path(params['barn_world'] or params['arena_world'])
+        shapes = scene(world_file)
     goal = np.array(result['gt_goal_xy_m'])
     if params['barn_world']:
         gt = np.asarray(local_trajectory(gt.tolist(), SimpleNamespace(**params)))
         goal = np.asarray(local_trajectory([[*goal, 0., 0.]], SimpleNamespace(**params)))[0, :2]
     case['gt'] = gt
-    fig, ax = plt.subplots(figsize=(8, 6), constrained_layout=True)
+    if first_person:
+        fig, (ax, view) = plt.subplots(1, 2, figsize=(14, 6), constrained_layout=True)
+        camera = view.imshow(image(shapes, world_gt[0]))
+        view.axis('off')
+        view.set_title('First-person 3D reconstruction | virtual camera\nheight 0.38 m / horizontal FOV 90 degrees')
+    else:
+        fig, ax = plt.subplots(figsize=(8, 6), constrained_layout=True)
     map_panel(ax, case)
     ax.update_datalim([goal])
     low, high = np.minimum(gt[:, :2].min(axis=0), goal)-1.2, np.maximum(gt[:, :2].max(axis=0), goal)+1.2
@@ -103,7 +116,7 @@ def navigation(version, bucket, relative):
     ax.legend(loc='best', fontsize=8)
     status = 'STRICT PASS' if result['scored_success'] else 'STRICT FAIL'
     fig.suptitle(f'{version} / full evaluation / telemetry replay / 8x', fontsize=12)
-    output = OUT / version / 'navigation' / bucket / (relative.replace('/', '-') + '.mp4')
+    output = OUT / version / 'navigation' / bucket / (relative.replace('/', '-') + ('-first-person' if first_person else '') + '.mp4')
     output.parent.mkdir(parents=True, exist_ok=True)
     fps, speed, duration = 12, 8, result['elapsed_s']
     writer = FFMpegWriter(fps=fps, codec='libx264', extra_args=['-pix_fmt', 'yuv420p', '-movflags', '+faststart'])
@@ -116,12 +129,17 @@ def navigation(version, bucket, relative):
             c, s = math.cos(yaw), math.sin(yaw)
             robot.set_xy(case['footprint'] @ np.array([[c, s], [-s, c]]) + [x, y])
             line.set_data(gt[:row+1, 0], gt[:row+1, 1])
+            observed = []
             for circle, samples in obstacles:
                 observation = samples[np.abs(samples[:, 0] - stamp).argmin()]
                 circle.set_visible(abs(observation[0] - stamp) <= .25)
                 circle.center, circle.radius = tuple(observation[2:4]), observation[4]
+                if abs(observation[0] - stamp) <= .25:
+                    observed.append(observation)
             ax.set_title(f"{relative}\n{status} | action {result['result']} | collision {result['collision']}\n"
                          f"t={elapsed:.1f}/{duration:.1f}s | final goal distance {result['final_goal_distance_m']:.3f}m")
+            if first_person:
+                camera.set_data(image(shapes, world_gt[row], observed))
             writer.grab_frame()
     fig.savefig(output.with_suffix('.png'), dpi=100)
     plt.close(fig)
@@ -131,6 +149,8 @@ def navigation(version, bucket, relative):
     assert abs(float(probe['format']['duration']) - (math.ceil(duration*fps/speed)+1)/fps) < .1
     files = [case['path']/f for f in ('nav2-goal.json', 'navigation-trajectories.npz', 'run-provenance.json', 'nav2-params.yaml')]
     files.append(Path(params['map_yaml']))
+    if first_person:
+        files.append(world_file)
     item = record(version, case['path'], output, {k:result[k] for k in
         ('result', 'scored_success', 'collision', 'elapsed_s', 'final_goal_distance_m', 'input_failure')}, files)
     item.update(video=probe, poster=str(output.with_suffix('.png').relative_to(OUT)),
@@ -139,6 +159,19 @@ def navigation(version, bucket, relative):
 
 
 if __name__ == '__main__':
+    import argparse
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--case', help='Render a single recorded relative case path')
+    parser.add_argument('--version', choices=RUNS, default='v1-candidate-g')
+    parser.add_argument('--bucket', choices=('success', 'failure'), default='success')
+    parser.add_argument('--first-person', action='store_true')
+    args = parser.parse_args()
+    if args.case:
+        item = navigation(args.version, args.bucket, args.case, args.first_person)
+        print(json.dumps(item, indent=2))
+        sys.exit(0)
+    if args.first_person:
+        parser.error('--first-person requires --case')
     records = []
     for version in RUNS:
         for world in (22, 144, 255):

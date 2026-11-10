@@ -18,9 +18,11 @@ from PIL import Image
 import yaml
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = Path(__file__).resolve().parent / 'assets'
 DATA = ROOT / 'integration/results/v0/timed-mppi-startup-pilot'
 sys.path.insert(0, str(ROOT / 'integration/scripts'))
+from artifact_paths import new_output
+
+OUT = new_output('reports', 'v0-report') / 'assets'
 from navigation_metrics import local_trajectory
 from run_provenance import verify_provenance
 
@@ -196,7 +198,7 @@ def evidence(cases):
 
 
 def html_report():
-    report = OUT.parent / 'report.md'
+    report = Path(__file__).resolve().parent / 'report.md'
     body = markdown.markdown(report.read_text(), extensions=['tables', 'fenced_code'])
     style = """body{max-width:1080px;margin:40px auto;padding:0 24px;font:16px/1.7 system-ui,sans-serif;color:#18383c;background:#fff}
     h1{font-size:38px;margin-bottom:8px}h2{font-size:24px;margin-top:42px;border-bottom:1px solid #dce8e8;padding-bottom:8px}
@@ -216,7 +218,7 @@ if __name__ == '__main__':
     for case in cases:
         assert case['identity']['sources'] == cases[0]['identity']['sources']
         assert case['identity']['runtime_hashes'] == cases[0]['identity']['runtime_hashes']
-    OUT.mkdir(exist_ok=True)
+    OUT.mkdir(parents=True, exist_ok=True)
     trajectories(cases)
     metrics(cases)
     mapping(cases)

@@ -2,6 +2,7 @@
 """Assemble a 10 Hz rolling JT16 scan from 100 Hz Gazebo snapshots."""
 import numpy as np
 import json
+from copy import deepcopy
 from pathlib import Path
 from ament_index_python.packages import get_package_share_directory
 from sensor_geometry import self_returns
@@ -16,10 +17,8 @@ class Adapter(Node):
     def __init__(self):
         super().__init__('jt16_rolling_cloud_adapter')
         self.declare_parameter('segments', 10)
-        self.declare_parameter('output_scan_rate_hz', 10.0)
         self.declare_parameter('minimum_z', -100.0)
         self.segments = int(self.get_parameter('segments').value)
-        self.scan_period = 1.0 / float(self.get_parameter('output_scan_rate_hz').value)
         self.minimum_z = float(self.get_parameter('minimum_z').value)
         self.segment_index = 0
         self.parts = []
@@ -39,9 +38,8 @@ class Adapter(Node):
         end = message.width if self.segment_index == self.segments - 1 else start + columns_per_segment
         segment = raw[:, start:end].reshape(-1).copy()
         stamp = message.header.stamp.sec + message.header.stamp.nanosec * 1e-9
-        column_count = end - start
-        offsets = np.arange(column_count, dtype=np.float64) / max(column_count, 1) * (self.scan_period / self.segments)
-        timestamps = stamp + np.tile(offsets, message.height)
+        # A snapshot has one capture time; synthetic offsets misalign IMU deskew.
+        timestamps = np.full(len(segment), stamp, dtype=np.float64)
         self.parts.append((segment, timestamps))
         self.segment_index += 1
         if self.segment_index < self.segments:
@@ -69,7 +67,11 @@ class Adapter(Node):
             PointField(name=name, offset=dtype.fields[name][1], datatype=datatype, count=1)
             for name, datatype in [('x', 7), ('y', 7), ('z', 7), ('intensity', 7), ('ring', 4), ('timestamp', 8)]
         ]
-        output = point_cloud2.create_cloud(self.first_header, fields, points)
+        output = point_cloud2.create_cloud(deepcopy(self.first_header), fields, points)
+        if len(points):
+            # HESAI preprocessing measures point offsets from the first retained point.
+            output.header.stamp.sec, output.header.stamp.nanosec = divmod(
+                round(float(points['timestamp'][0]) * 1e9), 1000000000)
         self.publisher.publish(output)
         self.parts.clear()
         self.segment_index = 0

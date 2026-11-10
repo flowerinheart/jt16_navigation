@@ -9,9 +9,12 @@ import math
 from pathlib import Path
 import subprocess
 import tempfile
+import sys
 
 ROOT = Path(__file__).resolve().parents[2]
-BASELINE = ROOT / 'integration/results/v0/full-benchmark-20261101'
+sys.path.insert(0, str(ROOT / 'integration/scripts'))
+from artifact_paths import artifact_dir, new_output
+BASELINE = artifact_dir('evaluations') / 'v0/full-benchmark-20261101'
 
 
 def grading_fingerprint(revision=None):
@@ -140,7 +143,7 @@ def compare(v1_root, output):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--v1', type=Path, required=True)
-    parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--output', type=Path, default=new_output('reports', 'comparison'))
     args = parser.parse_args()
     result = compare(args.v1.resolve(), args.output.resolve())
     print(json.dumps(result['targets'], indent=2))

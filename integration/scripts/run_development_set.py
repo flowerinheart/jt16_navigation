@@ -2,10 +2,19 @@
 """Run a mixed development manifest through the existing mapping/navigation tools."""
 import argparse
 import json
+import signal
 import subprocess
 from pathlib import Path
 
 from run_provenance import verify_provenance
+from artifact_paths import new_output
+
+stop_requested = False
+
+
+def request_stop(signum, frame):
+    global stop_requested
+    stop_requested = True
 
 
 def validate_manifest(manifest):
@@ -67,8 +76,19 @@ def run_development_set(manifest, output):
     logs = output / 'runner-logs'
     logs.mkdir()
     worlds = sorted({entry['world_id'] for entry in manifest['entries'] if entry['dataset'] == 'BARN'})
-    maps = {world: map_world(world, output, scripts, logs) for world in worlds}
-    records = [navigate_entry(entry, output, scripts, logs, maps) for entry in manifest['entries']]
+    maps = {}
+    records = []
+    # Finish the current child so its EXIT trap cleans up the ROS process groups.
+    for world in worlds:
+        if stop_requested:
+            raise SystemExit(143)
+        maps[world] = map_world(world, output, scripts, logs)
+    for entry in manifest['entries']:
+        if stop_requested:
+            raise SystemExit(143)
+        records.append(navigate_entry(entry, output, scripts, logs, maps))
+    if stop_requested:
+        raise SystemExit(143)
     summary = {'manifest': manifest['name'], 'navigation_cases': len(records),
                'strict_successes': sum(row.get('scored_success') is True and row['runner_exit_code'] == 0 for row in records),
                'collisions': sum(bool(row.get('collision')) for row in records),
@@ -78,9 +98,10 @@ def run_development_set(manifest, output):
 
 
 if __name__ == '__main__':
+    signal.signal(signal.SIGTERM, request_stop)
     parser = argparse.ArgumentParser()
     parser.add_argument('--manifest', type=Path, required=True)
-    parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--output', type=Path, default=new_output('evaluations', 'development'))
     args = parser.parse_args()
     summary = run_development_set(json.loads(args.manifest.read_text()), args.output)
     print(json.dumps({key: value for key, value in summary.items() if key != 'entries'}, indent=2))
