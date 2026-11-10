@@ -236,6 +236,28 @@ class GeometryTests(unittest.TestCase):
             self.assertFalse((run/'map-bundle-metadata.json').exists())
             self.assertEqual(json.loads((run/'mapping-result.json').read_text()),result)
 
+    def test_mapping_metadata_supports_output_outside_checkout(self):
+        root = SCRIPTS.parents[1]
+        with tempfile.TemporaryDirectory() as temp:
+            run = Path(temp)
+            (run/'nav-map').mkdir()
+            for name in ('map.pcd', 'nav-map/map.yaml', 'nav-map/map.pgm'):
+                (run/name).write_text('fixed fixture\n')
+            result = dict(terminal_state='COMPLETE', paired_samples=6,
+                          ate_rmse_m=.1, translation_p95_m=.2, yaw_rmse_rad=.03,
+                          map_valid=False)
+            (run/'mapping-result.json').write_text(json.dumps(result))
+            (run/'map-metrics.json').write_text(json.dumps(dict(occupied_f1=.9, occupied_iou=.8)))
+            subprocess.run([sys.executable, str(SCRIPTS/'write_map_bundle_metadata.py'),
+                            '--run', temp, '--world-id', '22'], check=True, capture_output=True)
+            metadata = json.loads((run/'map-bundle-metadata.json').read_text())
+            self.assertEqual(Path(metadata['files']['raw_pcd']['path']), run/'map.pcd')
+            self.assertFalse(Path(metadata['files']['fastlio_config']['path']).is_absolute())
+            for item in metadata['files'].values():
+                self.assertEqual(hashlib.sha256((root/item['path']).read_bytes()).hexdigest(),
+                                 item['sha256'])
+            self.assertTrue(json.loads((run/'mapping-result.json').read_text())['map_valid'])
+
     def test_obstacle_heartbeat_requires_every_actor(self):
         self.assertTrue(obstacle_observations_fresh({},0,10.))
         self.assertTrue(obstacle_observations_fresh({0:9.8,1:10.},2,10.))
